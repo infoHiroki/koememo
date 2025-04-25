@@ -10,16 +10,18 @@ import os
 import sys
 import json
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, scrolledtext
 import threading
 import subprocess
 import logging
 import time
+import re
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 # 設定ファイルのパス
 CONFIG_PATH = Path(__file__).parent / "config.json"
+LOG_FILE_PATH = Path(__file__).parent / "koememo.log"
 
 # ロガーの設定
 logging.basicConfig(
@@ -63,6 +65,10 @@ class KoeMemoGUI:
         # サービス状態
         self.service_running = False
         self.service_thread = None
+        
+        # ログ更新用変数
+        self.log_update_running = False
+        self.log_update_thread = None
         
         # UI構築
         self.build_ui()
@@ -159,6 +165,10 @@ class KoeMemoGUI:
         models_frame = ttk.Frame(notebook, padding=10)
         notebook.add(models_frame, text="モデル管理")
         
+        # ログビューワータブ
+        log_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(log_frame, text="ログビューワー")
+        
         # 基本設定タブの内容
         self.build_basic_settings(basic_frame)
         
@@ -173,6 +183,9 @@ class KoeMemoGUI:
         
         # モデル管理タブの内容
         self.build_models_management(models_frame)
+        
+        # ログビューワータブの内容
+        self.build_log_viewer(log_frame)
         
         # ステータスと操作ボタン
         status_frame = ttk.Frame(self.root, padding=10)
@@ -874,12 +887,126 @@ class KoeMemoGUI:
 
     def on_closing(self):
         """ウィンドウクローズ時の処理"""
+        # ログ更新スレッドの停止
+        self.log_update_running = False
+        
         if self.service_running:
             if messagebox.askyesno("確認", "サービスが実行中です。停止してアプリケーションを終了しますか？"):
                 self.stop_service()
                 self.root.destroy()
         else:
             self.root.destroy()
+
+    def build_log_viewer(self, parent: ttk.Frame):
+        """ログビューワータブの構築"""
+        # 操作フレーム
+        control_frame = ttk.Frame(parent)
+        control_frame.pack(fill=tk.X, pady=5)
+        
+        # 自動スクロールチェックボックス
+        self.autoscroll_var = tk.BooleanVar(value=True)
+        autoscroll_check = ttk.Checkbutton(
+            control_frame, 
+            text="自動スクロール", 
+            variable=self.autoscroll_var
+        )
+        autoscroll_check.pack(side=tk.LEFT, padx=5)
+        
+        # 検索入力
+        ttk.Label(control_frame, text="検索:").pack(side=tk.LEFT, padx=5)
+        self.search_var = tk.StringVar()
+        search_entry = ttk.Entry(control_frame, textvariable=self.search_var, width=30)
+        search_entry.pack(side=tk.LEFT, padx=5)
+        
+        # 検索ボタン
+        ttk.Button(control_frame, text="検索", command=self.search_logs).pack(side=tk.LEFT, padx=5)
+        
+        # リフレッシュボタン
+        ttk.Button(control_frame, text="更新", command=self.refresh_logs).pack(side=tk.RIGHT, padx=5)
+        
+        # ログテキストエリア
+        self.log_text = scrolledtext.ScrolledText(parent, width=80, height=20, wrap=tk.WORD)
+        self.log_text.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        # 初期ログの読み込み
+        self.refresh_logs()
+        
+        # ログ更新スレッドの開始
+        self.start_log_updates()
+    
+    def start_log_updates(self):
+        """ログ更新スレッドを開始"""
+        if not self.log_update_running:
+            self.log_update_running = True
+            self.log_update_thread = threading.Thread(
+                target=self.update_logs_periodically,
+                daemon=True
+            )
+            self.log_update_thread.start()
+    
+    def update_logs_periodically(self):
+        """ログを定期的に更新するスレッド"""
+        while self.log_update_running:
+            # GUIスレッドでログを更新
+            self.root.after(0, self.refresh_logs)
+            # 2秒待機
+            time.sleep(2)
+    
+    def refresh_logs(self):
+        """ログファイルの内容を更新"""
+        try:
+            if LOG_FILE_PATH.exists():
+                with open(LOG_FILE_PATH, "r", encoding="utf-8") as f:
+                    log_content = f.read()
+                
+                # 現在のカーソル位置を記憶
+                current_position = self.log_text.yview()
+                
+                # テキストを更新
+                self.log_text.delete(1.0, tk.END)
+                self.log_text.insert(tk.END, log_content)
+                
+                # 検索キーワードがあれば強調表示
+                if self.search_var.get():
+                    self.search_logs()
+                
+                # 自動スクロールが有効の場合は最下部までスクロール
+                if self.autoscroll_var.get():
+                    self.log_text.see(tk.END)
+                else:
+                    # 自動スクロールが無効の場合は元の位置に戻す
+                    self.log_text.yview_moveto(current_position[0])
+            else:
+                self.log_text.delete(1.0, tk.END)
+                self.log_text.insert(tk.END, "ログファイルが見つかりません。")
+        except Exception as e:
+            logger.error(f"ログ更新エラー: {e}")
+            self.log_text.delete(1.0, tk.END)
+            self.log_text.insert(tk.END, f"ログの読み込みに失敗しました: {e}")
+    
+    def search_logs(self):
+        """ログ内を検索して強調表示"""
+        # 検索キーワード
+        keyword = self.search_var.get()
+        if not keyword:
+            return
+        
+        # タグの削除
+        self.log_text.tag_remove("search", "1.0", tk.END)
+        
+        # 大文字小文字を区別しない検索
+        start_pos = "1.0"
+        while True:
+            start_pos = self.log_text.search(keyword, start_pos, tk.END, nocase=True)
+            if not start_pos:
+                break
+            
+            end_pos = f"{start_pos}+{len(keyword)}c"
+            self.log_text.tag_add("search", start_pos, end_pos)
+            start_pos = end_pos
+        
+        # 検索結果の強調表示
+        self.log_text.tag_config("search", background="yellow", foreground="black")
 
 
 def main():
