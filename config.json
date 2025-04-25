@@ -1,0 +1,67 @@
+{
+    "app_version": "1.0.0",
+    "config_version": "1.2.0",
+    "transcription": {
+        "model_size": "tiny",
+        "language": "ja",
+        "compute_type": "int8"
+    },
+    "llm": {
+        "api_type": "openai",
+        "api_key": "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",
+        "model": "gpt-4o-mini",
+        "temperature": 0.3,
+        "max_tokens": 1500,
+        "google_api_key": ""
+    },
+    "file_watcher": {
+        "input_directory": "/Users/hirokitakamura/Downloads/KoeMemoInput",
+        "output_directory": "/Users/hirokitakamura/Downloads/KoeMemoOutput",
+        "watch_interval_seconds": 900,
+        "supported_extensions": [
+            ".mp3",
+            ".mp4",
+            ".wav",
+            ".m4a",
+            ".avi",
+            ".mov",
+            ".wmv",
+            ".flac"
+        ]
+    },
+    "prompt_templates": {
+        "default": "以下は会議の文字起こしです。これを元に、簡潔で構造化された議事録を作成してください。\n\n重要なポイント、決定事項、アクションアイテムを明確にし、余分な情報は省略してください。\n\nフォーマットは以下の通りにしてください：\n1. 会議の概要\n2. 主な議題と議論\n3. 決定事項\n4. アクションアイテム（担当者と期限）\n\n文字起こし内容：\n{transcription}",
+        "formal": "以下は正式な会議の文字起こしです。これを元に、フォーマルな議事録を作成してください。\n\n会議名、日時、出席者のリスト、議題、各議題についての議論の要約、決定事項、およびアクションアイテムを含めてください。\n\n文字起こし内容：\n{transcription}"
+    },
+    "llm_models": {
+        "openai": [
+            "gpt-3.5-turbo",
+            "gpt-3.5-turbo-16k",
+            "gpt-4",
+            "gpt-4-turbo",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "gpt-4-32k"
+        ],
+        "anthropic": [
+            "claude-3-opus-20240229",
+            "claude-3-sonnet-20240229",
+            "claude-3-haiku-20240307",
+            "claude-2.0",
+            "claude-2.1",
+            "claude-instant-1.2"
+        ],
+        "google": [
+            "gemini-pro",
+            "gemini-1.5-pro",
+            "gemini-1.5-flash",
+            "gemini-ultra"
+        ]
+    },
+    "processed_files": {
+        "d3d5b29c69a43210427b568ea60ba410": {
+            "processed_at": "2025-04-25T17:20:16.862269",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRec_memo_2025-0425-1720.txt"
+        }
+    }
+}
