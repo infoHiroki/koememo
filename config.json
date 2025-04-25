@@ -20,12 +20,11 @@
             ".mp3",
             ".mp4",
             ".wav",
-            ".m4a",
-            ".avi",
-            ".mov",
-            ".wmv",
-            ".flac"
+            ".m4a"
         ]
+    },
+    "templates": {
+        "default": "# 議事録\n\n## 会議情報\n- 日時：{{date}}\n- 議題：{{topic}}\n\n## 参加者\n{{participants}}\n\n## 議事内容\n{{content}}\n\n## 決定事項\n{{decisions}}\n\n## 次回アクション\n{{next_actions}}"
     },
     "prompt_templates": {
         "default": "以下は会議の文字起こしです。これを元に、簡潔で構造化された議事録を作成してください。\n\n重要なポイント、決定事項、アクションアイテムを明確にし、余分な情報は省略してください。\n\nフォーマットは以下の通りにしてください：\n1. 会議の概要\n2. 主な議題と議論\n3. 決定事項\n4. アクションアイテム（担当者と期限）\n\n文字起こし内容：\n{transcription}"
