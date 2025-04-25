@@ -438,7 +438,20 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
         
         # 結果を文字列にまとめる
         result = []
-        for segment in segments:
+        segment_count = 0
+        # segments はジェネレータなので、リストに変換して全体のセグメント数を取得
+        segments_list = list(segments)
+        total_segments = len(segments_list)
+        logger.info(f"合計セグメント数: {total_segments}")
+        
+        for segment in segments_list:
+            segment_count += 1
+            
+            # 100セグメントごとに進捗をログに表示
+            if segment_count % 100 == 0 or segment_count == total_segments:
+                progress = (segment_count / total_segments) * 100
+                logger.info(f"文字起こし進捗: {segment_count}/{total_segments} セグメント処理 ({progress:.1f}%)")
+                
             if should_stop:
                 logger.info("文字起こし処理が中断されました。")
                 return None
@@ -485,15 +498,25 @@ def call_llm_api(transcription: str, config: Dict[str, Any]) -> Optional[str]:
         template = config["prompt_templates"]["default"]
         prompt = template.replace("{transcription}", transcription)
         
+        logger.info(f"LLM API ({api_type}) 呼び出し開始")
+        
+        result = None
         if api_type == "openai":
-            return call_openai_api(prompt, llm_config)
+            result = call_openai_api(prompt, llm_config)
         elif api_type == "anthropic":
-            return call_anthropic_api(prompt, llm_config)
+            result = call_anthropic_api(prompt, llm_config)
         elif api_type == "google":
-            return call_google_api(prompt, llm_config)
+            result = call_google_api(prompt, llm_config)
         else:
             logger.error(f"サポートされていないAPI種類: {api_type}")
             return None
+            
+        if result:
+            logger.info(f"LLM API ({api_type}) 呼び出し完了: 約{len(result)}文字の応答を受信")
+        else:
+            logger.error(f"LLM API ({api_type}) 呼び出し失敗: 応答なし")
+            
+        return result
     
     except Exception as e:
         logger.error(f"LLM API呼び出しエラー: {e}")
@@ -687,8 +710,10 @@ def process_file_queue():
             
             # ファイル処理
             logger.info(f"処理開始: {file_path}")
+            logger.info(f"処理ステップ 1/4: 文字起こし準備")
             
             # 1. 文字起こし
+            logger.info(f"処理ステップ 2/4: 文字起こし実行中")
             transcription = transcribe_file(file_path, config)
             if not transcription or should_stop:
                 logger.warning(f"文字起こしに失敗または中断されました: {file_path}")
@@ -705,6 +730,7 @@ def process_file_queue():
             logger.info(f"文字起こし結果を保存しました: {transcript_file}")
             
             # 2. LLM API呼び出し
+            logger.info(f"処理ステップ 3/4: LLM APIで議事録生成中")
             memo = call_llm_api(transcription, config)
             if not memo or should_stop:
                 logger.warning(f"議事録生成に失敗または中断されました: {file_path}")
@@ -712,6 +738,7 @@ def process_file_queue():
                 continue
             
             # 3. 結果を保存
+            logger.info(f"処理ステップ 4/4: 議事録保存中")
             output_file = save_output(memo, file_path, config)
             logger.info(f"ファイル処理が完了しました: {file_path} -> {output_file}")
             
