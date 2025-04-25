@@ -6,7 +6,7 @@
     },
     "llm": {
         "api_type": "openai",
-        "api_key": "sk-your-api-key-here",
+        "api_key": "",
         "model": "gpt-4o-mini",
         "temperature": 0.3,
         "max_tokens": 1500,
@@ -15,7 +15,7 @@
     "file_watcher": {
         "input_directory": "/Users/hirokitakamura/Downloads/KoeMemoInput",
         "output_directory": "/Users/hirokitakamura/Downloads/KoeMemoOutput",
-        "transcript_directory": "",
+        "transcript_directory": "/Users/hirokitakamura/Downloads/KoeMemoTranscript",
         "supported_extensions": [
             ".mp3",
             ".mp4",
@@ -28,82 +28,19 @@
         ]
     },
     "prompt_templates": {
-        "default": "以下は会議の文字起こしです。これを元に、簡潔で構造化された議事録を作成してください。\n\n重要なポイント、決定事項、アクションアイテムを明確にし、余分な情報は省略してください。\n\nフォーマットは以下の通りにしてください：\n1. 会議の概要\n2. 主な議題と議論\n3. 決定事項\n4. アクションアイテム（担当者と期限）\n\n文字起こし内容：\n{transcription}",
-        "formal": "以下は正式な会議の文字起こしです。これを元に、フォーマルな議事録を作成してください。\n\n会議名、日時、出席者のリスト、議題、各議題についての議論の要約、決定事項、およびアクションアイテムを含めてください。\n\n文字起こし内容：\n{transcription}"
+        "default": "以下は会議の文字起こしです。これを元に、簡潔で構造化された議事録を作成してください。\n\n重要なポイント、決定事項、アクションアイテムを明確にし、余分な情報は省略してください。\n\nフォーマットは以下の通りにしてください：\n1. 会議の概要\n2. 主な議題と議論\n3. 決定事項\n4. アクションアイテム（担当者と期限）\n\n文字起こし内容：\n{transcription}"
     },
     "llm_models": {
         "openai": [
             "gpt-3.5-turbo",
-            "gpt-3.5-turbo-16k",
-            "gpt-4",
-            "gpt-4-turbo",
-            "gpt-4o",
-            "gpt-4o-mini",
-            "gpt-4-32k"
+            "gpt-4o-mini"
         ],
         "anthropic": [
-            "claude-3-opus-20240229",
-            "claude-3-sonnet-20240229",
-            "claude-3-haiku-20240307",
-            "claude-2.0",
-            "claude-2.1",
-            "claude-instant-1.2"
+            "claude-3-haiku-20240307"
         ],
         "google": [
-            "gemini-pro",
-            "gemini-1.5-pro",
-            "gemini-1.5-flash",
-            "gemini-ultra"
+            "gemini-pro"
         ]
     },
-    "processed_files": {
-        "d3d5b29c69a43210427b568ea60ba410": {
-            "processed_at": "2025-04-25T17:20:16.862269",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRec_memo_2025-0425-1720.txt"
-        },
-        "271b810214713e3695c7349aeeb46297": {
-            "processed_at": "2025-04-25T17:45:37.655891",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/2025-0421Aitrad会議_memo_2025-0425-1745.txt"
-        },
-        "65868937535ca60e3ec13ea4f44b7d00": {
-            "processed_at": "2025-04-25T17:58:03.165685",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー_memo_2025-0425-1758.txt"
-        },
-        "7671ea429f343915469cc3b825f13f6e": {
-            "processed_at": "2025-04-25T17:58:10.052726",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー2_memo_2025-0425-1758.txt"
-        },
-        "aa23f12c410633e3270ad3937fa7e569": {
-            "processed_at": "2025-04-25T17:58:16.883025",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー3_memo_2025-0425-1758.txt"
-        },
-        "ef89e6341a9014fe69c895039b555cce": {
-            "processed_at": "2025-04-25T17:58:23.543838",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー4_memo_2025-0425-1758.txt"
-        },
-        "e0127a65e2ce421cda420b9dd5682345": {
-            "processed_at": "2025-04-25T18:09:56.391793",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー_memo_2025-0425-1809.txt"
-        },
-        "c9510a947ffbf78d66a255c9733b290d": {
-            "processed_at": "2025-04-25T19:25:59.183930",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestLong_memo_2025-0425-1925.txt"
-        },
-        "f5ea2535c224cf5d3d4e700be2cabc9e": {
-            "processed_at": "2025-04-25T19:26:08.143314",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShort_memo_2025-0425-1926.txt"
-        },
-        "c92c58e0797a41013874c0c5621996d1": {
-            "processed_at": "2025-04-25T19:41:35.476758",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー2_memo_2025-0425-1941.txt"
-        },
-        "81743d6816d7bd71bdab0d7a20d95221": {
-            "processed_at": "2025-04-25T23:03:33.027774",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー3_memo_2025-0425-2303.txt"
-        },
-        "3cbf9dbcddaa35b0804b8dbf599d04bf": {
-            "processed_at": "2025-04-25T23:12:37.380275",
-            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー4_memo_2025-0425-2312.txt"
-        }
-    }
+    "processed_files": {}
 }
