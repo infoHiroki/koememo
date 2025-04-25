@@ -216,18 +216,6 @@ class KoeMemoGUI:
         
         ttk.Button(input_frame, text="参照...", command=self.browse_input_dir).grid(row=0, column=2, padx=5, pady=5)
         
-        # 出力ディレクトリ
-        output_frame = ttk.Frame(parent)
-        output_frame.pack(fill=tk.X, pady=5)
-        
-        ttk.Label(output_frame, text="出力ディレクトリ:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        
-        self.output_dir_var = tk.StringVar(value=self.config.get("file_watcher", {}).get("output_directory", ""))
-        output_entry = ttk.Entry(output_frame, textvariable=self.output_dir_var, width=50)
-        output_entry.grid(row=0, column=1, sticky=tk.EW, padx=5, pady=5)
-        
-        ttk.Button(output_frame, text="参照...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
-        
         # 文字起こしディレクトリ
         transcript_frame = ttk.Frame(parent)
         transcript_frame.pack(fill=tk.X, pady=5)
@@ -239,6 +227,18 @@ class KoeMemoGUI:
         transcript_entry.grid(row=0, column=1, sticky=tk.EW, padx=5, pady=5)
         
         ttk.Button(transcript_frame, text="参照...", command=self.browse_transcript_dir).grid(row=0, column=2, padx=5, pady=5)
+        
+        # 出力ディレクトリ
+        output_frame = ttk.Frame(parent)
+        output_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(output_frame, text="出力ディレクトリ:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        
+        self.output_dir_var = tk.StringVar(value=self.config.get("file_watcher", {}).get("output_directory", ""))
+        output_entry = ttk.Entry(output_frame, textvariable=self.output_dir_var, width=50)
+        output_entry.grid(row=0, column=1, sticky=tk.EW, padx=5, pady=5)
+        
+        ttk.Button(output_frame, text="参照...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
         
         # 対応拡張子
         extensions_frame = ttk.Frame(parent)
