@@ -228,6 +228,18 @@ class KoeMemoGUI:
         
         ttk.Button(output_frame, text="参照...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
         
+        # 文字起こしディレクトリ
+        transcript_frame = ttk.Frame(parent)
+        transcript_frame.pack(fill=tk.X, pady=5)
+        
+        ttk.Label(transcript_frame, text="文字起こしディレクトリ:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
+        
+        self.transcript_dir_var = tk.StringVar(value=self.config.get("file_watcher", {}).get("transcript_directory", ""))
+        transcript_entry = ttk.Entry(transcript_frame, textvariable=self.transcript_dir_var, width=50)
+        transcript_entry.grid(row=0, column=1, sticky=tk.EW, padx=5, pady=5)
+        
+        ttk.Button(transcript_frame, text="参照...", command=self.browse_transcript_dir).grid(row=0, column=2, padx=5, pady=5)
+        
         # 対応拡張子
         extensions_frame = ttk.Frame(parent)
         extensions_frame.pack(fill=tk.X, pady=5)
@@ -750,6 +762,12 @@ class KoeMemoGUI:
         if directory:
             self.output_dir_var.set(directory)
 
+    def browse_transcript_dir(self):
+        """文字起こしディレクトリを選択"""
+        directory = filedialog.askdirectory(initialdir=self.transcript_dir_var.get() or os.path.expanduser("~"))
+        if directory:
+            self.transcript_dir_var.set(directory)
+
     def update_config_from_ui(self):
         """UI入力から設定を更新"""
         # ファイル監視設定
@@ -758,6 +776,7 @@ class KoeMemoGUI:
         
         self.config["file_watcher"]["input_directory"] = self.input_dir_var.get()
         self.config["file_watcher"]["output_directory"] = self.output_dir_var.get()
+        self.config["file_watcher"]["transcript_directory"] = self.transcript_dir_var.get()
         
         # 拡張子の処理
         extensions = [f".{ext.strip()}" for ext in self.extensions_var.get().split(",") if ext.strip()]

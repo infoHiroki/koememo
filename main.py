@@ -720,11 +720,23 @@ def process_file_queue():
                 file_queue.task_done()
                 continue
             
-            # 文字起こし結果を保存（オプション）
-            base_dir = os.path.dirname(file_path)
+            # 文字起こし結果を保存
             base_name = os.path.splitext(os.path.basename(file_path))[0]
             timestamp = datetime.now().strftime("%Y-%m%d-%H%M")
-            transcript_file = os.path.join(base_dir, f"{base_name}_transcript_{timestamp}.txt")
+            
+            # 文字起こしディレクトリの設定を確認
+            transcript_dir = config["file_watcher"].get("transcript_directory", "")
+            if transcript_dir and os.path.exists(transcript_dir):
+                # 指定されたディレクトリに保存
+                save_dir = transcript_dir
+            else:
+                # 入力ファイルと同じディレクトリに保存
+                save_dir = os.path.dirname(file_path)
+            
+            # 保存先ディレクトリが存在しない場合は作成
+            os.makedirs(save_dir, exist_ok=True)
+            
+            transcript_file = os.path.join(save_dir, f"{base_name}_transcript_{timestamp}.txt")
             with open(transcript_file, "w", encoding="utf-8") as f:
                 f.write(transcription)
             logger.info(f"文字起こし結果を保存しました: {transcript_file}")
@@ -834,6 +846,19 @@ def validate_config(config: Dict[str, Any]) -> bool:
     
     if not config["file_watcher"]["output_directory"]:
         logger.warning("出力ディレクトリが設定されていません。入力ディレクトリと同じになります。")
+    
+    # 文字起こしディレクトリの確認
+    transcript_dir = config["file_watcher"].get("transcript_directory", "")
+    if transcript_dir:
+        if not os.path.exists(transcript_dir):
+            try:
+                os.makedirs(transcript_dir, exist_ok=True)
+                logger.info(f"文字起こしディレクトリを作成しました: {transcript_dir}")
+            except Exception as e:
+                logger.warning(f"文字起こしディレクトリの作成に失敗しました: {e}")
+                logger.warning("文字起こし結果は入力ディレクトリに保存されます。")
+    else:
+        logger.info("文字起こしディレクトリが設定されていないため、入力ディレクトリと同じになります。")
     
     # LLM API設定の確認
     api_type = config["llm"]["api_type"]
