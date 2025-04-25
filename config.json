@@ -1,6 +1,4 @@
 {
-    "app_version": "1.0.0",
-    "config_version": "1.2.0",
     "transcription": {
         "model_size": "tiny",
         "language": "ja",

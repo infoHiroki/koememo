@@ -25,6 +25,8 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 import queue
 import re
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
 
 # サードパーティライブラリのインポート（必要に応じてインストール）
 try:
@@ -47,6 +49,14 @@ try:
 except ImportError:
     print("エラー: watchdogモジュールがインストールされていません。")
     print("pip install watchdog を実行してインストールしてください。")
+    sys.exit(1)
+
+try:
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+except ImportError:
+    print("エラー: tkinterモジュールが利用できません。")
+    print("Pythonにtkinterがインストールされていることを確認してください。")
     sys.exit(1)
 
 # ロガーの設定
@@ -97,6 +107,156 @@ class MediaFileHandler(FileSystemEventHandler):
                     return
                 
                 file_queue.put(file_path)
+
+
+# GUIクラス
+class KoeMemoGUI:
+    """設定用GUIクラス"""
+    
+    def __init__(self, root: tk.Tk):
+        """グラフィックユーザーインタフェースの初期化"""
+        self.root = root
+        self.root.title("KoeMemo - 設定")
+        
+        # ウィンドウを画面中央に配置
+        self.center_window()
+        
+        # アイコンの設定（存在する場合）
+        icon_path = Path(__file__).parent / "icon.ico"
+        if icon_path.exists():
+            self.root.iconbitmap(str(icon_path))
+        
+        # 設定の読み込み
+        self.config = self.load_config()
+        
+        # サービス状態
+        self.service_running = False
+        self.service_thread = None
+        
+        # UI構築
+        self.build_ui()
+
+    def center_window(self):
+        """ウィンドウを画面中央に配置"""
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        window_width = 900
+        window_height = 700
+        
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
+
+    def load_config(self) -> Dict[str, Any]:
+        """設定ファイルの読み込み"""
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                
+                # LLMモデルリストが存在しない場合はデフォルト値を設定
+                if "llm_models" not in config:
+                    config["llm_models"] = {
+                        "openai": [
+                            "gpt-3.5-turbo",
+                            "gpt-3.5-turbo-16k",
+                            "gpt-4",
+                            "gpt-4-turbo",
+                            "gpt-4o",
+                            "gpt-4o-mini",
+                            "gpt-4-32k"
+                        ],
+                        "anthropic": [
+                            "claude-3-opus-20240229",
+                            "claude-3-sonnet-20240229",
+                            "claude-3-haiku-20240307",
+                            "claude-2.0",
+                            "claude-2.1",
+                            "claude-instant-1.2"
+                        ],
+                        "google": [
+                            "gemini-pro",
+                            "gemini-1.5-pro",
+                            "gemini-1.5-flash",
+                            "gemini-ultra"
+                        ]
+                    }
+                    # 更新した設定を保存
+                    with open(CONFIG_PATH, "w", encoding="utf-8") as f_save:
+                        json.dump(config, f_save, ensure_ascii=False, indent=4)
+                    
+                return config
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error(f"設定ファイルの読み込みエラー: {e}")
+            messagebox.showerror("エラー", f"設定ファイルの読み込みに失敗しました: {e}")
+            return {}
+
+    def save_config(self):
+        """設定ファイルの保存"""
+        try:
+            with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+                json.dump(self.config, f, ensure_ascii=False, indent=4)
+            logger.info("設定を保存しました。")
+        except Exception as e:
+            logger.error(f"設定ファイルの保存エラー: {e}")
+            messagebox.showerror("エラー", f"設定ファイルの保存に失敗しました: {e}")
+
+    def build_ui(self):
+        """ユーザーインタフェースの構築"""
+        # タブコントロール
+        notebook = ttk.Notebook(self.root)
+        notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # 基本設定タブ
+        basic_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(basic_frame, text="基本設定")
+        
+        # モデル設定タブ
+        model_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(model_frame, text="モデル設定")
+        
+        # LLM設定タブ
+        llm_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(llm_frame, text="LLM設定")
+        
+        # テンプレートタブ
+        template_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(template_frame, text="テンプレート")
+        
+        # モデル管理タブ
+        models_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(models_frame, text="モデル管理")
+        
+        # 基本設定タブの内容
+        self.build_basic_settings(basic_frame)
+        
+        # モデル設定タブの内容
+        self.build_model_settings(model_frame)
+        
+        # LLM設定タブの内容
+        self.build_llm_settings(llm_frame)
+        
+        # テンプレートタブの内容
+        self.build_template_settings(template_frame)
+        
+        # モデル管理タブの内容
+        self.build_models_management(models_frame)
+        
+        # ステータスと操作ボタン
+        status_frame = ttk.Frame(self.root, padding=10)
+        status_frame.pack(fill=tk.X, side=tk.BOTTOM)
+        
+        # ステータスラベル
+        self.status_var = tk.StringVar(value="サービスは停止しています")
+        status_label = ttk.Label(status_frame, textvariable=self.status_var)
+        status_label.pack(side=tk.LEFT, padx=5)
+        
+        # ボタン
+        self.start_stop_button = ttk.Button(status_frame, text="サービス開始", command=self.toggle_service)
+        self.start_stop_button.pack(side=tk.RIGHT, padx=5)
+        
+        ttk.Button(status_frame, text="設定保存", command=self.save_config_and_reload).pack(side=tk.RIGHT, padx=5)
 
 
 def get_file_hash(file_path: str) -> str:
@@ -157,10 +317,6 @@ def load_config() -> Dict[str, Any]:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             config_data = json.load(f)
             
-            # 設定バージョンチェック
-            if "config_version" not in config_data:
-                config_data["config_version"] = "1.0.0"
-            
             # 処理済みファイルセクションがなければ追加
             if "processed_files" not in config_data:
                 config_data["processed_files"] = {}
@@ -177,7 +333,7 @@ def save_config(config: Dict[str, Any]):
         json.dump(config, f, ensure_ascii=False, indent=4)
 
 
-def clean_old_processed_files(max_entries: int = 1000, days_to_keep: int = 30):
+def clean_old_processed_files(max_entries: int = 1000):
     """古い処理済みファイル情報をクリーンアップ"""
     global config
     
@@ -185,7 +341,7 @@ def clean_old_processed_files(max_entries: int = 1000, days_to_keep: int = 30):
     if not processed_files:
         return
     
-    # エントリ数が上限を超えている場合、または古いエントリがある場合にクリーンアップ
+    # エントリ数が上限を超えている場合にクリーンアップ
     if len(processed_files) > max_entries:
         logger.info(f"処理済みファイルリストのクリーンアップを実行します (現在: {len(processed_files)} エントリ)")
         
@@ -298,6 +454,15 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
         
         return "\n".join(result)
     
+    except FileNotFoundError:
+        logger.error(f"ファイルが見つかりません: {file_path}")
+        return None
+    except PermissionError:
+        logger.error(f"ファイルにアクセスする権限がありません: {file_path}")
+        return None
+    except RuntimeError as e:
+        logger.error(f"Whisperモデル実行エラー: {e}")
+        return None
     except Exception as e:
         logger.error(f"文字起こし処理エラー: {e}")
         return None
@@ -384,7 +549,7 @@ def call_anthropic_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
         return None
     
     try:
-        # 新しいClaudeのMessages API形式で呼び出し
+        # Claude Messages API形式で呼び出し
         headers = {
             "Content-Type": "application/json",
             "x-api-key": api_key,
@@ -410,32 +575,8 @@ def call_anthropic_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
             result = response.json()
             return result["content"][0]["text"]
         else:
-            # 旧API形式での呼び出しを試みる
-            headers = {
-                "Content-Type": "application/json",
-                "X-API-Key": api_key,
-                "anthropic-version": "2023-06-01"
-            }
-            
-            data = {
-                "model": config["model"],
-                "prompt": f"\n\nHuman: {prompt}\n\nAssistant:",
-                "temperature": config["temperature"],
-                "max_tokens_to_sample": config["max_tokens"],
-            }
-            
-            response = requests.post(
-                "https://api.anthropic.com/v1/complete",
-                headers=headers,
-                json=data
-            )
-            
-            if response.status_code == 200:
-                result = response.json()
-                return result["completion"]
-            else:
-                logger.error(f"API呼び出しエラー: {response.status_code} - {response.text}")
-                return None
+            logger.error(f"API呼び出しエラー: {response.status_code} - {response.text}")
+            return None
     
     except Exception as e:
         logger.error(f"Anthropic API呼び出し例外: {e}")
@@ -743,98 +884,12 @@ def stop_service():
     logger.info("KoeMemoサービスが停止されました。")
 
 
-def check_directories_interactively():
-    """対話的にディレクトリを設定"""
-    global config
-    config = load_config()
-    
-    # 入力ディレクトリの確認
-    input_dir = config["file_watcher"]["input_directory"]
-    if not input_dir:
-        print("\n入力ディレクトリが設定されていません。")
-        while True:
-            path = input("監視する入力ディレクトリのパスを入力してください: ").strip()
-            if not path:
-                continue
-                
-            # パスを正規化
-            path = os.path.normpath(os.path.expanduser(path))
-            
-            if not os.path.exists(path):
-                try:
-                    os.makedirs(path, exist_ok=True)
-                    print(f"ディレクトリを作成しました: {path}")
-                except Exception as e:
-                    print(f"ディレクトリの作成に失敗しました: {e}")
-                    continue
-            
-            config["file_watcher"]["input_directory"] = path
-            break
-    
-    # 出力ディレクトリの確認
-    output_dir = config["file_watcher"]["output_directory"]
-    if not output_dir:
-        print("\n出力ディレクトリが設定されていません。")
-        print("1. 入力ディレクトリと同じにする")
-        print("2. 別のディレクトリを指定する")
-        
-        choice = input("選択してください (1/2): ").strip()
-        if choice == "2":
-            while True:
-                path = input("出力ディレクトリのパスを入力してください: ").strip()
-                if not path:
-                    continue
-                    
-                # パスを正規化
-                path = os.path.normpath(os.path.expanduser(path))
-                
-                if not os.path.exists(path):
-                    try:
-                        os.makedirs(path, exist_ok=True)
-                        print(f"ディレクトリを作成しました: {path}")
-                    except Exception as e:
-                        print(f"ディレクトリの作成に失敗しました: {e}")
-                        continue
-                
-                config["file_watcher"]["output_directory"] = path
-                break
-        else:
-            # 入力ディレクトリと同じにする
-            config["file_watcher"]["output_directory"] = config["file_watcher"]["input_directory"]
-            print("注意: 入力と出力が同じディレクトリの場合、既存ファイルのチェックが重要です。")
-    
-    # APIキーの確認
-    api_type = config["llm"]["api_type"]
-    if api_type == "openai" and not config["llm"]["api_key"]:
-        print("\nOpenAI APIキーが設定されていません。")
-        api_key = input("APIキーを入力してください（入力しない場合は最小限機能で実行）: ").strip()
-        if api_key:
-            config["llm"]["api_key"] = api_key
-    elif api_type == "anthropic" and not config["llm"]["api_key"]:
-        print("\nAnthropic APIキーが設定されていません。")
-        api_key = input("APIキーを入力してください（入力しない場合は最小限機能で実行）: ").strip()
-        if api_key:
-            config["llm"]["api_key"] = api_key
-    elif api_type == "google" and not config["llm"].get("google_api_key"):
-        print("\nGoogle APIキーが設定されていません。")
-        api_key = input("APIキーを入力してください（入力しない場合は最小限機能で実行）: ").strip()
-        if api_key:
-            config["llm"]["google_api_key"] = api_key
-    
-    # 設定の保存
-    save_config(config)
-    print("\n設定を保存しました。")
-
-
 def main():
     """メインエントリーポイント"""
     print("KoeMemo - 音声・動画ファイルから自動的に議事録を生成するツール")
     print("======================================================")
     
     try:
-        # 最初の設定確認
-        check_directories_interactively()
-        
         print("\nKoeMemoサービスを開始しています...")
         if start_service():
             print("サービスが正常に開始されました。Ctrl+Cで終了できます。")

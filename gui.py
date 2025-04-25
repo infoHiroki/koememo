@@ -86,10 +86,6 @@ class KoeMemoGUI:
             with open(CONFIG_PATH, "r", encoding="utf-8") as f:
                 config = json.load(f)
                 
-                # 設定ファイルのバージョンチェック
-                if "config_version" not in config:
-                    config["config_version"] = "1.0.0"
-                    
                 # LLMモデルリストが存在しない場合はデフォルト値を設定
                 if "llm_models" not in config:
                     config["llm_models"] = {
