@@ -6,7 +6,7 @@
     },
     "llm": {
         "api_type": "openai",
-        "api_key": "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",
+        "api_key": "sk-your-api-key-here",
         "model": "gpt-4o-mini",
         "temperature": 0.3,
         "max_tokens": 1500,
@@ -84,6 +84,26 @@
         "e0127a65e2ce421cda420b9dd5682345": {
             "processed_at": "2025-04-25T18:09:56.391793",
             "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー_memo_2025-0425-1809.txt"
+        },
+        "c9510a947ffbf78d66a255c9733b290d": {
+            "processed_at": "2025-04-25T19:25:59.183930",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestLong_memo_2025-0425-1925.txt"
+        },
+        "f5ea2535c224cf5d3d4e700be2cabc9e": {
+            "processed_at": "2025-04-25T19:26:08.143314",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShort_memo_2025-0425-1926.txt"
+        },
+        "c92c58e0797a41013874c0c5621996d1": {
+            "processed_at": "2025-04-25T19:41:35.476758",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー2_memo_2025-0425-1941.txt"
+        },
+        "81743d6816d7bd71bdab0d7a20d95221": {
+            "processed_at": "2025-04-25T23:03:33.027774",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー3_memo_2025-0425-2303.txt"
+        },
+        "3cbf9dbcddaa35b0804b8dbf599d04bf": {
+            "processed_at": "2025-04-25T23:12:37.380275",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー4_memo_2025-0425-2312.txt"
         }
     }
 }
