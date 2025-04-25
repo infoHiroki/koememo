@@ -724,19 +724,11 @@ def process_file_queue():
             base_name = os.path.splitext(os.path.basename(file_path))[0]
             timestamp = datetime.now().strftime("%Y-%m%d-%H%M")
             
-            # 文字起こしディレクトリの設定を確認
-            transcript_dir = config["file_watcher"].get("transcript_directory", "")
-            if transcript_dir and os.path.exists(transcript_dir):
-                # 指定されたディレクトリに保存
-                save_dir = transcript_dir
-            else:
-                # 入力ファイルと同じディレクトリに保存
-                save_dir = os.path.dirname(file_path)
+            # 文字起こしディレクトリに保存
+            transcript_dir = config["file_watcher"]["transcript_directory"]
+            # ディレクトリの存在チェックは validate_config で行われているので、ここでは省略
             
-            # 保存先ディレクトリが存在しない場合は作成
-            os.makedirs(save_dir, exist_ok=True)
-            
-            transcript_file = os.path.join(save_dir, f"{base_name}_transcript_{timestamp}.txt")
+            transcript_file = os.path.join(transcript_dir, f"{base_name}_transcript_{timestamp}.txt")
             with open(transcript_file, "w", encoding="utf-8") as f:
                 f.write(transcription)
             logger.info(f"文字起こし結果を保存しました: {transcript_file}")
@@ -842,23 +834,31 @@ def validate_config(config: Dict[str, Any]) -> bool:
     
     # ディレクトリの設定を確認
     if not config["file_watcher"]["input_directory"]:
-        logger.warning("入力ディレクトリが設定されていません。設定GUIから設定してください。")
+        logger.error("入力ディレクトリが設定されていません。設定GUIから設定してください。")
+        return False
     
     if not config["file_watcher"]["output_directory"]:
-        logger.warning("出力ディレクトリが設定されていません。入力ディレクトリと同じになります。")
+        logger.error("出力ディレクトリが設定されていません。設定GUIから設定してください。")
+        return False
     
     # 文字起こしディレクトリの確認
     transcript_dir = config["file_watcher"].get("transcript_directory", "")
-    if transcript_dir:
-        if not os.path.exists(transcript_dir):
+    if not transcript_dir:
+        logger.error("文字起こしディレクトリが設定されていません。設定GUIから設定してください。")
+        return False
+        
+    # 各ディレクトリの存在チェックと作成処理
+    input_dir = config["file_watcher"]["input_directory"]
+    output_dir = config["file_watcher"]["output_directory"]
+    
+    for dir_name, dir_path in [("入力", input_dir), ("文字起こし", transcript_dir), ("出力", output_dir)]:
+        if not os.path.exists(dir_path):
             try:
-                os.makedirs(transcript_dir, exist_ok=True)
-                logger.info(f"文字起こしディレクトリを作成しました: {transcript_dir}")
+                os.makedirs(dir_path, exist_ok=True)
+                logger.info(f"{dir_name}ディレクトリを作成しました: {dir_path}")
             except Exception as e:
-                logger.warning(f"文字起こしディレクトリの作成に失敗しました: {e}")
-                logger.warning("文字起こし結果は入力ディレクトリに保存されます。")
-    else:
-        logger.info("文字起こしディレクトリが設定されていないため、入力ディレクトリと同じになります。")
+                logger.error(f"{dir_name}ディレクトリの作成に失敗しました: {e}")
+                return False
     
     # LLM API設定の確認
     api_type = config["llm"]["api_type"]
@@ -870,9 +870,7 @@ def validate_config(config: Dict[str, Any]) -> bool:
         logger.warning("Google APIキーが設定されていません。設定GUIから設定してください。")
     
     # 入出力ディレクトリのチェック（異なるディレクトリを推奨）
-    input_dir = config["file_watcher"]["input_directory"]
-    output_dir = config["file_watcher"]["output_directory"]
-    if input_dir and output_dir and input_dir == output_dir:
+    if input_dir == output_dir:
         logger.warning("入力ディレクトリと出力ディレクトリが同じです。別のディレクトリを使用することを推奨します。")
     
     return True

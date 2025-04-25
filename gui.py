@@ -822,10 +822,25 @@ class KoeMemoGUI:
             self.restart_service()
 
     def toggle_service(self):
-        """サービスの開始/停止を切り替え"""
+        """サービスの開始/停止の切り替え"""
         if self.service_running:
             self.stop_service()
         else:
+            # サービス開始前に必須ディレクトリが設定されているか確認
+            if not self.input_dir_var.get():
+                messagebox.showerror("エラー", "入力ディレクトリが設定されていません。\n設定してから再試行してください。")
+                return
+                
+            if not self.transcript_dir_var.get():
+                messagebox.showerror("エラー", "文字起こしディレクトリが設定されていません。\n設定してから再試行してください。")
+                return
+                
+            if not self.output_dir_var.get():
+                messagebox.showerror("エラー", "出力ディレクトリが設定されていません。\n設定してから再試行してください。")
+                return
+            
+            # 設定を保存してからサービス開始
+            self.save_config()
             self.start_service()
 
     def start_service(self):
