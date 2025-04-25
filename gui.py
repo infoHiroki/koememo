@@ -72,8 +72,8 @@ class KoeMemoGUI:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         
-        window_width = 800
-        window_height = 600
+        window_width = 900
+        window_height = 700
         
         x = (screen_width - window_width) // 2
         y = (screen_height - window_height) // 2
@@ -218,16 +218,6 @@ class KoeMemoGUI:
         output_entry.grid(row=0, column=1, sticky=tk.EW, padx=5, pady=5)
         
         ttk.Button(output_frame, text="参照...", command=self.browse_output_dir).grid(row=0, column=2, padx=5, pady=5)
-        
-        # 監視間隔
-        interval_frame = ttk.Frame(parent)
-        interval_frame.pack(fill=tk.X, pady=5)
-        
-        ttk.Label(interval_frame, text="監視間隔（秒）:").grid(row=0, column=0, sticky=tk.W, padx=5, pady=5)
-        
-        self.interval_var = tk.IntVar(value=self.config.get("file_watcher", {}).get("watch_interval_seconds", 900))
-        interval_spinbox = ttk.Spinbox(interval_frame, from_=5, to=3600, textvariable=self.interval_var, width=10)
-        interval_spinbox.grid(row=0, column=1, sticky=tk.W, padx=5, pady=5)
         
         # 対応拡張子
         extensions_frame = ttk.Frame(parent)
@@ -759,7 +749,6 @@ class KoeMemoGUI:
         
         self.config["file_watcher"]["input_directory"] = self.input_dir_var.get()
         self.config["file_watcher"]["output_directory"] = self.output_dir_var.get()
-        self.config["file_watcher"]["watch_interval_seconds"] = self.interval_var.get()
         
         # 拡張子の処理
         extensions = [f".{ext.strip()}" for ext in self.extensions_var.get().split(",") if ext.strip()]

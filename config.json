@@ -17,7 +17,6 @@
     "file_watcher": {
         "input_directory": "/Users/hirokitakamura/Downloads/KoeMemoInput",
         "output_directory": "/Users/hirokitakamura/Downloads/KoeMemoOutput",
-        "watch_interval_seconds": 900,
         "supported_extensions": [
             ".mp3",
             ".mp4",
@@ -62,6 +61,30 @@
         "d3d5b29c69a43210427b568ea60ba410": {
             "processed_at": "2025-04-25T17:20:16.862269",
             "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRec_memo_2025-0425-1720.txt"
+        },
+        "271b810214713e3695c7349aeeb46297": {
+            "processed_at": "2025-04-25T17:45:37.655891",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/2025-0421Aitrad会議_memo_2025-0425-1745.txt"
+        },
+        "65868937535ca60e3ec13ea4f44b7d00": {
+            "processed_at": "2025-04-25T17:58:03.165685",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー_memo_2025-0425-1758.txt"
+        },
+        "7671ea429f343915469cc3b825f13f6e": {
+            "processed_at": "2025-04-25T17:58:10.052726",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー2_memo_2025-0425-1758.txt"
+        },
+        "aa23f12c410633e3270ad3937fa7e569": {
+            "processed_at": "2025-04-25T17:58:16.883025",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー3_memo_2025-0425-1758.txt"
+        },
+        "ef89e6341a9014fe69c895039b555cce": {
+            "processed_at": "2025-04-25T17:58:23.543838",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestRecのコピー4_memo_2025-0425-1758.txt"
+        },
+        "e0127a65e2ce421cda420b9dd5682345": {
+            "processed_at": "2025-04-25T18:09:56.391793",
+            "output_file": "/Users/hirokitakamura/Downloads/KoeMemoOutput/koememoTestShortのコピー_memo_2025-0425-1809.txt"
         }
     }
 }
