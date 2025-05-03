@@ -1,0 +1,39 @@
+{
+  "transcription": {
+    "model_size": "tiny",
+    "language": "ja",
+    "compute_type": "int8"
+  },
+  "llm": {
+    "api_type": "openai",
+    "api_key": "",
+    "model": "gpt-4o-mini",
+    "temperature": 0.3,
+    "max_tokens": 1500,
+    "google_api_key": ""
+  },
+  "file_watcher": {
+    "input_directory": "",
+    "output_directory": "",
+    "transcript_directory": "",
+    "supported_extensions": [
+      ".mp3",
+      ".mp4",
+      ".wav",
+      ".m4a",
+      ".avi",
+      ".mov",
+      ".wmv",
+      ".flac"
+    ]
+  },
+  "prompt_templates": {
+    "default": "以下は会議の文字起こしです。これを元に、簡潔で構造化された議事録を作成してください。\n\n重要なポイント、決定事項、アクションアイテムを明確にし、余分な情報は省略してください。\n\nフォーマットは以下の通りにしてください：\n1. 会議の概要\n2. 主な議題と議論\n3. 決定事項\n4. アクションアイテム（担当者と期限）\n\n文字起こし内容：\n{transcription}"
+  },
+  "llm_models": {
+    "openai": ["gpt-3.5-turbo", "gpt-4o-mini"],
+    "anthropic": ["claude-3-haiku-20240307"],
+    "google": ["gemini-pro"]
+  },
+  "processed_files": {}
+}

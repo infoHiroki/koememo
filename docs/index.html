@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KoeMemo - 音声・動画から自動議事録生成</title>
+  <meta name="description" content="KoeMemoは音声・動画ファイルから文字起こしを行い、AI技術で構造化された議事録を自動生成するツールです">
+  <link rel="icon" href="icon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="styles.css">
+  <!-- Google Fontsの読み込み -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <img src="icon.ico" alt="KoeMemo" class="header-icon">
+        <div>
+          <h1>KoeMemo</h1>
+          <p class="tagline">音声・動画ファイルから自動的に議事録を生成するシンプルなツール</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="#features">特徴</a></li>
+        <li><a href="#screenshots">スクリーンショット</a></li>
+        <li><a href="#setup">セットアップ</a></li>
+        <li><a href="#usage">使い方</a></li>
+        <li><a href="https://github.com/infoHiroki/koememo" target="_blank">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main>
+    <section id="hero" class="container">
+      <div class="hero-content">
+        <h2>会議の記録作業を<br>AIの力で効率化</h2>
+        <p>KoeMemo（コエメモ）は、音声や動画ファイルから文字起こしを行い、LLM（大規模言語モデル）と連携して構造化された議事録を自動生成するツールです。Faster Whisperによる高品質な文字起こしとLLM APIを活用し、会議の記録作業を効率化します。</p>
+        <div class="cta-buttons">
+          <a href="https://github.com/infoHiroki/koememo/releases" class="button primary">ダウンロード</a>
+          <a href="#features" class="button secondary">詳細を見る</a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="images/01.png" alt="KoeMemo画面" class="screenshot">
+      </div>
+    </section>
+
+    <section id="features" class="container">
+      <h2>特徴</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <h3>全自動処理</h3>
+          <p>指定フォルダを監視し、新しいファイルを自動検出して処理します。一度設定すれば後は自動的に議事録が生成されます。</p>
+        </div>
+        <div class="feature-card">
+          <h3>高品質文字起こし</h3>
+          <p>Faster Whisperモデルによる正確な文字起こしで、複数話者の会話も高精度で認識します。</p>
+        </div>
+        <div class="feature-card">
+          <h3>AI議事録生成</h3>
+          <p>OpenAI、Anthropic、Googleなど各種LLMを活用し、構造化された議事録を自動作成します。</p>
+        </div>
+        <div class="feature-card">
+          <h3>セグメント表示</h3>
+          <p>文字起こし結果をタイムスタンプ付きセグメント単位で表示します。特定の発言を素早く見つけられます。</p>
+        </div>
+        <div class="feature-card">
+          <h3>最小限の設定</h3>
+          <p>シンプルなGUIで必要な設定のみを管理。設定は直感的で使いやすいインターフェースで行えます。</p>
+        </div>
+        <div class="feature-card">
+          <h3>バックグラウンド実行</h3>
+          <p>ユーザーの作業を妨げないサイレント動作。他の作業をしながら議事録を生成できます。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="screenshots" class="container">
+      <h2>スクリーンショット</h2>
+      <div class="screenshot-gallery">
+        <div class="screenshot-item">
+          <img src="images/01.png" alt="KoeMemo基本設定画面" class="screenshot">
+          <p>基本設定画面 - ディレクトリの設定</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="images/02.png" alt="KoeMemoモデル設定画面" class="screenshot">
+          <p>文字起こしモデルの設定</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="images/03.png" alt="KoeMemo LLM設定画面" class="screenshot">
+          <p>LLM API設定画面</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="images/04.png" alt="KoeMemoテンプレート設定画面" class="screenshot">
+          <p>プロンプトテンプレート設定</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="images/05.png" alt="KoeMemoモデル管理画面" class="screenshot">
+          <p>モデル管理画面</p>
+        </div>
+        <div class="screenshot-item">
+          <img src="images/06.png" alt="KoeMemoログビューワー" class="screenshot">
+          <p>ログビューワー画面</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="setup" class="container">
+      <h2>セットアップ</h2>
+      <div class="support-notice">
+        <p><strong>セットアップサポートが必要な場合は有償にて行っています。</strong>お問い合わせは <a href="mailto:info.hirokitakamura@gmail.com">info.hirokitakamura@gmail.com</a> までご連絡ください。</p>
+      </div>
+      <div class="setup-tabs">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="windows">Windows</button>
+          <button class="tab-button" data-tab="macos">macOS</button>
+          <button class="tab-button" data-tab="linux">Linux</button>
+        </div>
+        <div class="tab-content active" id="windows-content">
+          <h3>Windows向けセットアップ</h3>
+          <p>Windows環境でのインストール手順の概要です。詳細は<a href="windows-setup.html">Windows詳細セットアップガイド</a>を参照してください。</p>
+          
+          <h4>必要条件</h4>
+          <ul>
+            <li>Python 3.9以上（3.11.3推奨）</li>
+            <li>FFmpeg</li>
+            <li>インターネット接続</li>
+          </ul>
+
+          <h4>インストール手順</h4>
+          <ol>
+            <li>開発者モードを有効化する（必須）</li>
+            <li>Pythonをインストール（Add to PATHにチェック）</li>
+            <li>KoeMemoをダウンロード</li>
+            <li>FFmpegをインストールして環境変数に追加</li>
+            <li>必要なPythonライブラリをインストール</li>
+          </ol>
+          
+          <a href="windows-setup.html" class="button secondary">詳細な手順を見る</a>
+        </div>
+        <div class="tab-content" id="macos-content">
+          <h3>macOS向けセットアップ</h3>
+          <p>macOS環境でのインストール手順の概要です。詳細は<a href="macos-setup.html">macOS詳細セットアップガイド</a>を参照してください。</p>
+          
+          <h4>必要条件</h4>
+          <ul>
+            <li>Python 3.9以上（3.11.3推奨）</li>
+            <li>FFmpeg</li>
+            <li>インターネット接続</li>
+          </ul>
+
+          <h4>インストール手順</h4>
+          <ol>
+            <li>Pythonをインストール（<code>brew install python@3.11</code>）</li>
+            <li>KoeMemoをダウンロード</li>
+            <li>FFmpegをインストール（<code>brew install ffmpeg</code>）</li>
+            <li>必要なPythonライブラリをインストール</li>
+            <li>起動スクリプトに実行権限を付与（<code>chmod +x start.sh</code>）</li>
+          </ol>
+          
+          <a href="macos-setup.html" class="button secondary">詳細な手順を見る</a>
+        </div>
+        <div class="tab-content" id="linux-content">
+          <h3>Linux向けセットアップ</h3>
+          <p>Linux環境でのインストール手順の概要です。詳細は<a href="linux-setup.html">Linux詳細セットアップガイド</a>を参照してください。</p>
+          
+          <h4>必要条件</h4>
+          <ul>
+            <li>Python 3.9以上（3.11.3推奨）</li>
+            <li>FFmpeg</li>
+            <li>インターネット接続</li>
+          </ul>
+
+          <h4>インストール手順</h4>
+          <ol>
+            <li>Pythonのバージョンを確認し、必要に応じてインストール</li>
+            <li>KoeMemoをダウンロード</li>
+            <li>FFmpegをインストール（例：<code>sudo apt-get install ffmpeg</code>）</li>
+            <li>必要なPythonライブラリをインストール</li>
+            <li>起動スクリプトに実行権限を付与（<code>chmod +x start.sh</code>）</li>
+          </ol>
+          
+          <a href="linux-setup.html" class="button secondary">詳細な手順を見る</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="usage" class="container">
+      <h2>使い方</h2>
+      <div class="usage-steps">
+        <div class="usage-step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>初期設定</h3>
+            <p>KoeMemoを起動し、基本設定タブで各ディレクトリを設定します。LLM API設定タブでAPIキーとモデルを設定します。</p>
+          </div>
+        </div>
+        <div class="usage-step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>サービスの開始</h3>
+            <p>設定が完了したら「サービス開始」ボタンをクリックします。KoeMemoはバックグラウンドで動作を開始します。</p>
+          </div>
+        </div>
+        <div class="usage-step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>ファイルの配置</h3>
+            <p>設定した入力ディレクトリに音声ファイル（mp3, wav, m4a, flac）または動画ファイル（mp4, avi, mov, wmv）を追加します。</p>
+          </div>
+        </div>
+        <div class="usage-step">
+          <div class="step-number">4</div>
+          <div class="step-content">
+            <h3>自動処理</h3>
+            <p>KoeMemoが自動的にファイルを検出し、文字起こしとAI議事録の生成を開始します。処理の進捗はログビューワータブで確認できます。</p>
+          </div>
+        </div>
+        <div class="usage-step">
+          <div class="step-number">5</div>
+          <div class="step-content">
+            <h3>結果の確認</h3>
+            <p>処理が完了すると、文字起こし結果と議事録が設定したディレクトリに保存されます。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 KoeMemo Project</p>
+      <div class="footer-links">
+        <a href="https://github.com/infoHiroki/koememo" target="_blank">GitHub</a>
+        <a href="https://github.com/infoHiroki/koememo/issues" target="_blank">問題を報告</a>
+        <a href="windows-setup.html">Windows Setup</a>
+        <a href="macos-setup.html">macOS Setup</a>
+        <a href="linux-setup.html">Linux Setup</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // タブ切り替え機能
+    document.addEventListener('DOMContentLoaded', function() {
+      const tabButtons = document.querySelectorAll('.tab-button');
+      tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          // アクティブなタブボタンのクラスを切り替え
+          tabButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          // タブコンテンツの表示を切り替え
+          const tabId = this.getAttribute('data-tab');
+          const tabContents = document.querySelectorAll('.tab-content');
+          tabContents.forEach(content => content.classList.remove('active'));
+          document.getElementById(tabId + '-content').classList.add('active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

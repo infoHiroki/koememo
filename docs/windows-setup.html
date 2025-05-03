@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KoeMemo Windows セットアップガイド</title>
+  <meta name="description" content="KoeMemoのWindows環境でのインストールと設定手順を詳しく解説します">
+  <link rel="icon" href="icon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    /* このページ専用のスタイル */
+    .guide-content {
+      background-color: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2rem;
+      margin: 2rem 0;
+    }
+    
+    .guide-content h2 {
+      color: var(--primary-dark);
+      border-bottom: 2px solid var(--primary-color);
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+    }
+    
+    .guide-content h2:after {
+      display: none;
+    }
+    
+    .guide-content h3 {
+      margin-top: 1.5rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+    }
+    
+    .guide-content code {
+      background-color: #f5f5f5;
+      padding: 0.2rem 0.4rem;
+      border-radius: 3px;
+      font-family: monospace;
+    }
+    
+    .code-block {
+      background-color: #f5f5f5;
+      padding: 1rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      font-family: monospace;
+    }
+    
+    .important-note {
+      background-color: #fff8e6;
+      border-left: 4px solid #ffcc00;
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    
+    .back-to-top {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background-color: var(--primary-color);
+      color: white;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: all 0.3s;
+      opacity: 0;
+      visibility: hidden;
+    }
+    
+    .back-to-top.visible {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .back-to-top:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-3px);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>KoeMemo</h1>
+      <p class="tagline">Windows セットアップガイド</p>
+    </div>
+  </header>
+
+  <nav>
+    <div class="container">
+      <ul>
+        <li><a href="index.html">ホーム</a></li>
+        <li><a href="index.html#features">特徴</a></li>
+        <li><a href="index.html#screenshots">スクリーンショット</a></li>
+        <li><a href="index.html#setup">セットアップ</a></li>
+        <li><a href="https://github.com/infoHiroki/koememo" target="_blank">GitHub</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="support-notice">
+      <p><strong>セットアップサポートが必要な場合は有償にて行っています。</strong>お問い合わせは <a href="mailto:info.hirokitakamura@gmail.com">info.hirokitakamura@gmail.com</a> までご連絡ください。</p>
+    </div>
+    <div class="guide-content">
+      <h1>KoeMemo Windows セットアップガイド</h1>
+      <p>このガイドでは、Windows環境でのKoeMemo（コエメモ）のインストールから初期設定までの詳細な手順を説明します。</p>
+
+      <div class="table-of-contents">
+        <h2>目次</h2>
+        <ul>
+          <li><a href="#prerequisites">前提条件</a></li>
+          <li><a href="#installation">インストール手順</a>
+            <ul>
+              <li><a href="#dev-mode">開発者モードの有効化</a></li>
+              <li><a href="#python">Pythonのインストール</a></li>
+              <li><a href="#koememo">KoeMemoのダウンロード</a></li>
+              <li><a href="#ffmpeg">FFmpegのインストール</a></li>
+              <li><a href="#libraries">必要なPythonライブラリのインストール</a></li>
+            </ul>
+          </li>
+          <li><a href="#initial-setup">初期設定</a></li>
+          <li><a href="#launch">KoeMemoの起動</a></li>
+          <li><a href="#troubleshooting">トラブルシューティング</a></li>
+        </ul>
+      </div>
+
+      <h2 id="prerequisites">前提条件</h2>
+      <p>KoeMemoをWindows環境で使用するには、以下のソフトウェアが必要です：</p>
+      <ul>
+        <li>Python 3.9以上（3.11.3推奨、FasterWhisperの要件により3.8では動作しません）</li>
+        <li>FFmpeg</li>
+        <li>インターネット接続（初回のモデルダウンロードとLLM API連携用）</li>
+      </ul>
+
+      <h2 id="installation">インストール手順</h2>
+
+      <h3 id="dev-mode">開発者モードの有効化</h3>
+      <div class="important-note">
+        <strong>重要:</strong> この手順は必須です。特にLargeモデルを使用する場合は省略できません。
+      </div>
+      <ol>
+        <li>スタートメニュー → 「設定」（歯車アイコン）をクリック</li>
+        <li>「更新とセキュリティ」 → 「開発者向け」を選択</li>
+        <li>「開発者モード」をオンにする</li>
+        <li>確認ダイアログが表示されたら「はい」をクリック</li>
+        <li>変更が適用されるまで待機</li>
+      </ol>
+      <p><strong>Windows 11の場合:</strong> 「設定」→「プライバシーとセキュリティ」→「開発者向け」で開発者モードを有効にします。</p>
+
+      <h3 id="python">Pythonのインストール</h3>
+      <ol>
+        <li><a href="https://www.python.org/downloads/windows/" target="_blank">Python公式サイト</a>からPython 3.9以上をダウンロード（3.11.3推奨）
+          <ul>
+            <li>過去バージョンは<a href="https://www.python.org/downloads/" target="_blank">Downloads</a>ページで「Looking for a specific release?」から選択</li>
+            <li><a href="https://www.python.org/downloads/release/python-3113/" target="_blank">Python 3.11.3</a>を選択し、Windows installerをダウンロード</li>
+          </ul>
+        </li>
+        <li>インストーラを実行する
+          <ul>
+            <li><strong>重要:</strong> 「Add Python to PATH」にチェックを入れる</li>
+            <li>「Install Now」をクリック</li>
+          </ul>
+        </li>
+        <li>インストール完了後、コマンドプロンプトで確認:</li>
+      </ol>
+      <div class="code-block">python --version</div>
+      <p>期待される出力例: <code>Python 3.11.3</code></p>
+      <div class="important-note">
+        <strong>注意:</strong> FasterWhisperの要件により、Python 3.8では動作しません。Python 3.9以上が必要で、3.11.3の使用を推奨します。
+      </div>
+
+      <h3 id="koememo">KoeMemoのダウンロード</h3>
+      <ol>
+        <li>GitHubからリポジトリをクローン:</li>
+      </ol>
+      <div class="code-block">git clone https://github.com/infoHiroki/koememo.git</div>
+      <p>または、<a href="https://github.com/infoHiroki/koememo/archive/refs/heads/main.zip">ZIPファイル</a>としてダウンロードして任意の場所に解凍</p>
+      <ol start="2">
+        <li>ダウンロードしたフォルダを覚えておいてください（例: <code>C:\Users\username\Downloads\koememo</code>）</li>
+      </ol>
+
+      <h3 id="ffmpeg">FFmpegのインストール</h3>
+      <ol>
+        <li><a href="https://www.gyan.dev/ffmpeg/builds/" target="_blank">gyan.dev</a>からWindows用のFFmpegをダウンロード
+          <ul>
+            <li>「ffmpeg-release-essentials.zip」を選択</li>
+          </ul>
+        </li>
+        <li>ダウンロードしたファイルを解凍（7-Zipなどが必要）
+          <ul>
+            <li>適当な場所に解凍（例: <code>C:\ffmpeg</code>）</li>
+          </ul>
+        </li>
+        <li>環境変数のPATHにFFmpegの「bin」ディレクトリを追加:
+          <ul>
+            <li>スタートメニュー → 「環境変数」と検索 → 「システム環境変数の編集」</li>
+            <li>「環境変数」ボタンをクリック</li>
+            <li>「システム環境変数」の「Path」を選択して「編集」</li>
+            <li>「新規」をクリックし、FFmpegの「bin」ディレクトリのフルパスを追加（例: <code>C:\ffmpeg\bin</code>）</li>
+            <li>「OK」をクリックして全ての画面を閉じる</li>
+          </ul>
+        </li>
+        <li>コマンドプロンプトを再起動し、以下のコマンドでFFmpegが正しくインストールされたか確認:</li>
+      </ol>
+      <div class="code-block">ffmpeg -version</div>
+
+      <h3 id="libraries">必要なPythonライブラリのインストール</h3>
+      <ol>
+        <li>コマンドプロンプトを管理者権限で実行</li>
+        <li>KoeMemoのディレクトリに移動:</li>
+      </ol>
+      <div class="code-block">cd C:\Users\username\Downloads\koememo</div>
+      <ol start="3">
+        <li>以下のコマンドを一行ずつ実行して必要なライブラリをインストール:</li>
+      </ol>
+      <div class="code-block"># Hugging Faceのライブラリを先にインストール
+pip install huggingface-hub
+
+# 次に主要ライブラリをインストール
+pip install faster-whisper
+pip install requests
+pip install watchdog</div>
+      <div class="important-note">
+        <p><strong>注意:</strong></p>
+        <ul>
+          <li>コマンドは一行ずつ実行することで、エラーの発見と対処が容易になります</li>
+          <li>FasterWhisperはPython 3.9以上を要求しており、3.8では動作しません</li>
+          <li>インストール中にエラーが発生した場合は、<a href="#troubleshooting">トラブルシューティング</a>セクションを参照してください</li>
+        </ul>
+      </div>
+
+      <h2 id="initial-setup">初期設定</h2>
+      <p>KoeMemoを初めて起動すると、設定画面が表示されます。以下の手順で初期設定を行います。</p>
+
+      <h3>ディレクトリ設定</h3>
+      <p>「基本設定」タブで以下のディレクトリを設定します：</p>
+      <ol>
+        <li><strong>入力ディレクトリ</strong>:
+          <ul>
+            <li>処理したい音声・動画ファイルを置くフォルダを指定します</li>
+            <li>「参照...」ボタンをクリックして選択するか、直接パスを入力します</li>
+            <li>例: <code>C:\Users\username\Documents\KoeMemo\input</code></li>
+          </ul>
+        </li>
+        <li><strong>文字起こしディレクトリ</strong>:
+          <ul>
+            <li>文字起こし結果を保存するフォルダを指定します</li>
+            <li>「参照...」ボタンをクリックして選択するか、直接パスを入力します</li>
+            <li>例: <code>C:\Users\username\Documents\KoeMemo\transcripts</code></li>
+          </ul>
+        </li>
+        <li><strong>出力ディレクトリ</strong>:
+          <ul>
+            <li>生成された議事録を保存するフォルダを指定します</li>
+            <li>「参照...」ボタンをクリックして選択するか、直接パスを入力します</li>
+            <li>例: <code>C:\Users\username\Documents\KoeMemo\output</code></li>
+          </ul>
+        </li>
+      </ol>
+      <div class="important-note">
+        <strong>重要:</strong> すべてのディレクトリが存在しない場合は、自動的に作成されますが、作成先の親ディレクトリに対する書き込み権限が必要です。
+      </div>
+
+      <h3>文字起こしモデル設定</h3>
+      <p>「モデル設定」タブで以下の設定を行います：</p>
+      <ol>
+        <li><strong>モデルサイズ</strong>:
+          <ul>
+            <li>小さいほど処理速度が速く、大きいほど精度が高くなります</li>
+            <li>低性能PCの場合は「tiny」を選択</li>
+            <li>標準的なPCであれば「base」または「small」を選択</li>
+            <li>高性能PCまたはGPU搭載PCの場合は「medium」または「large」を選択</li>
+            <li><strong>重要:</strong> 「large」モデルを使用する場合は、必ず開発者モードをオンにしてください</li>
+          </ul>
+        </li>
+        <li><strong>言語</strong>:
+          <ul>
+            <li>日本語音声の場合は「日本語」</li>
+            <li>英語音声の場合は「英語」</li>
+            <li>複数の言語が混在する場合は「自動検出」</li>
+          </ul>
+        </li>
+        <li><strong>計算タイプ</strong>:
+          <ul>
+            <li>CPU環境では「int8」を選択（デフォルト）</li>
+            <li>GPU環境では「float16」を選択可能</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h3>LLM API設定</h3>
+      <p>「LLM設定」タブで以下の設定を行います：</p>
+      <ol>
+        <li><strong>API種類</strong>:
+          <ul>
+            <li>使用するLLMサービスを選択（OpenAI、Anthropic、Google）</li>
+          </ul>
+        </li>
+        <li><strong>APIキー</strong>:
+          <ul>
+            <li>選択したサービスのAPIキーを入力</li>
+          </ul>
+        </li>
+        <li><strong>モデル</strong>:
+          <ul>
+            <li>使用するモデルを選択</li>
+            <li>OpenAIの場合の推奨: <code>gpt-3.5-turbo</code>（低コスト）または <code>gpt-4o</code>（高品質）</li>
+          </ul>
+        </li>
+        <li><strong>Temperature</strong>:
+          <ul>
+            <li>議事録生成には0.2〜0.4が推奨</li>
+          </ul>
+        </li>
+        <li><strong>最大トークン数</strong>:
+          <ul>
+            <li>1000〜2000が一般的な設定</li>
+          </ul>
+        </li>
+      </ol>
+
+      <h2 id="launch">KoeMemoの起動</h2>
+      <ol>
+        <li>KoeMemoフォルダに移動</li>
+        <li><code>start.bat</code> をダブルクリック</li>
+      </ol>
+      <p>または、コマンドプロンプトで以下を実行:</p>
+      <div class="code-block">python gui.py</div>
+      <ol start="3">
+        <li>GUIが起動したら、「基本設定」タブですべてのディレクトリが正しく設定されていることを確認</li>
+        <li>画面下部の「サービス開始」ボタンをクリック</li>
+        <li>サービスが正常に開始されると、ステータスが「サービスは実行中です」に変わります</li>
+      </ol>
+
+      <h2 id="troubleshooting">トラブルシューティング</h2>
+
+      <h3>開発者モードに関する問題</h3>
+      <ul>
+        <li>Windows 10: 「設定」→「更新とセキュリティ」→「開発者向け」で開発者モードを有効にします</li>
+        <li>Windows 11: 「設定」→「プライバシーとセキュリティ」→「開発者向け」で開発者モードを有効にします</li>
+      </ul>
+
+      <h3>Pythonのインストールに関する問題</h3>
+      <p><strong>PATHが正しく設定されていない場合:</strong></p>
+      <ol>
+        <li>「システム環境変数」を開く</li>
+        <li>「Path」変数を編集し、Pythonのインストールディレクトリとそのサブディレクトリ「Scripts」が含まれていることを確認</li>
+        <li>例: <code>C:\Users\username\AppData\Local\Programs\Python\Python311</code> および <code>C:\Users\username\AppData\Local\Programs\Python\Python311\Scripts</code></li>
+      </ol>
+
+      <h3>FFmpegのインストールに関する問題</h3>
+      <p><strong>PATHが正しく設定されていない場合:</strong></p>
+      <ol>
+        <li>「システム環境変数」を開く</li>
+        <li>「Path」変数を編集し、FFmpegの「bin」ディレクトリが含まれていることを確認</li>
+        <li>例: <code>C:\ffmpeg\bin</code></li>
+      </ol>
+
+      <h3>ライブラリのインストールエラー</h3>
+      <p><strong>Faster-Whisperのインストールでエラーが発生する場合:</strong></p>
+      <ol>
+        <li>Visual C++ Build Toolsをインストール:
+          <ul>
+            <li><a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/" target="_blank">Visual Studio Build Tools</a>をダウンロード</li>
+            <li>インストーラを実行し、「C++ Build Tools」を選択してインストール</li>
+          </ul>
+        </li>
+        <li>Hugging Faceライブラリを先にインストールしてから再試行:</li>
+      </ol>
+      <div class="code-block">pip install huggingface-hub
+pip install faster-whisper</div>
+
+      <h3>その他の問題</h3>
+      <ul>
+        <li>Python 3.9以上（3.11.3推奨）が正しくインストールされているか確認してください</li>
+        <li>Windows Defenderやウイルス対策ソフトが実行を妨げている可能性があります。必要に応じて例外設定を行ってください</li>
+        <li>コマンドプロンプトを管理者権限で実行してコマンドを試してみてください</li>
+      </ul>
+    </div>
+
+    <p><a href="index.html" class="button secondary">ホームに戻る</a></p>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 KoeMemo Project</p>
+      <div class="footer-links">
+        <a href="https://github.com/infoHiroki/koememo" target="_blank">GitHub</a>
+        <a href="https://github.com/infoHiroki/koememo/issues" target="_blank">問題を報告</a>
+        <a href="#" target="_blank">ライセンス</a>
+      </div>
+    </div>
+  </footer>
+
+  <a href="#" class="back-to-top" id="back-to-top">↑</a>
+
+  <script>
+    // スクロールして上に戻るボタンの表示/非表示
+    window.addEventListener('scroll', function() {
+      var backToTopButton = document.getElementById('back-to-top');
+      if (window.pageYOffset > 300) {
+        backToTopButton.classList.add('visible');
+      } else {
+        backToTopButton.classList.remove('visible');
+      }
+    });
+    
+    // スムーズスクロール
+    document.getElementById('back-to-top').addEventListener('click', function(e) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  </script>
+</body>
+</html>
