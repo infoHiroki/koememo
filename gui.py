@@ -630,7 +630,13 @@ class KoeMemoGUI:
         ttk.Label(template_selector_frame, text="テンプレート:").pack(side=tk.LEFT, padx=5, pady=5)
         
         templates = list(self.config.get("prompt_templates", {}).keys())
-        self.template_var = tk.StringVar(value=templates[0] if templates else "")
+        
+        # 現在選択されているテンプレートを取得（設定されていなければ最初のテンプレート）
+        selected_template = self.config.get("llm", {}).get("selected_template", "")
+        if not selected_template or selected_template not in templates:
+            selected_template = templates[0] if templates else ""
+            
+        self.template_var = tk.StringVar(value=selected_template)
         self.template_combo = ttk.Combobox(template_selector_frame, textvariable=self.template_var, values=templates, state="readonly", width=20)
         self.template_combo.pack(side=tk.LEFT, padx=5, pady=5)
         self.template_combo.bind("<<ComboboxSelected>>", self.load_template)
@@ -684,6 +690,15 @@ class KoeMemoGUI:
         
         self.template_text.delete(1.0, tk.END)
         self.template_text.insert(tk.END, template_content)
+        
+        # 選択されたテンプレートを設定に反映
+        if "llm" not in self.config:
+            self.config["llm"] = {}
+        self.config["llm"]["selected_template"] = template_name
+        
+        # 設定変更をディスクに保存（頻繁に保存しすぎるのを避けるためeventがある場合のみ）
+        if event:
+            self.save_config()
 
     def save_template(self):
         """現在のテンプレートを保存"""
@@ -702,6 +717,12 @@ class KoeMemoGUI:
             self.config["prompt_templates"] = {}
         
         self.config["prompt_templates"][template_name] = template_content
+        
+        # 選択されたテンプレートを設定に反映
+        if "llm" not in self.config:
+            self.config["llm"] = {}
+        self.config["llm"]["selected_template"] = template_name
+        
         self.save_config()
         
         messagebox.showinfo("情報", f"テンプレート「{template_name}」を保存しました。")
@@ -728,6 +749,11 @@ class KoeMemoGUI:
         templates = list(self.config["prompt_templates"].keys())
         self.template_combo["values"] = templates
         self.template_var.set(new_name)
+        
+        # 選択されたテンプレートを設定に反映
+        if "llm" not in self.config:
+            self.config["llm"] = {}
+        self.config["llm"]["selected_template"] = new_name
         
         # テンプレートを読み込む
         self.load_template()
@@ -765,7 +791,13 @@ class KoeMemoGUI:
         # テンプレートリストを更新
         templates = list(self.config["prompt_templates"].keys())
         self.template_combo["values"] = templates
-        self.template_var.set(templates[0] if templates else "")
+        new_selected_template = templates[0] if templates else ""
+        self.template_var.set(new_selected_template)
+        
+        # 選択されたテンプレートを設定に反映
+        if "llm" in self.config and "selected_template" in self.config["llm"]:
+            if self.config["llm"]["selected_template"] == template_name:
+                self.config["llm"]["selected_template"] = new_selected_template
         
         # テンプレートを読み込む
         self.load_template()
@@ -833,6 +865,9 @@ class KoeMemoGUI:
         self.config["llm"]["model"] = self.model_var.get()
         self.config["llm"]["temperature"] = self.temp_var.get()
         self.config["llm"]["max_tokens"] = self.max_tokens_var.get()
+        
+        # 選択中のテンプレート名を保存
+        self.config["llm"]["selected_template"] = self.template_var.get()
         
         # テンプレート設定は保存済み（save_template内で処理）
 

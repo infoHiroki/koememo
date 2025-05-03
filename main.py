@@ -500,11 +500,16 @@ def call_llm_api(transcription: str, config: Dict[str, Any]) -> Optional[str]:
         llm_config = config["llm"]
         api_type = llm_config["api_type"]
         
-        # デフォルトのプロンプトテンプレートを使用
-        template = config["prompt_templates"]["default"]
+        # 選択されたテンプレートを使用（設定されていない場合はデフォルト）
+        template_name = llm_config.get("selected_template", "default")
+        if not template_name or template_name not in config["prompt_templates"]:
+            template_name = "default"
+            logger.warning(f"指定されたテンプレート '{template_name}' が見つかりません。デフォルトを使用します。")
+        
+        template = config["prompt_templates"][template_name]
         prompt = template.replace("{transcription}", transcription)
         
-        logger.info(f"LLM API ({api_type}) 呼び出し開始")
+        logger.info(f"LLM API ({api_type}) 呼び出し開始 - テンプレート: {template_name}")
         
         result = None
         if api_type == "openai":
