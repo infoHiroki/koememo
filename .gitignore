@@ -121,9 +121,13 @@ venv.bak/
 *.mov
 *.wmv
 *.flac
-processed_*
+processed_*.txt
+processed_*.log
 *.log.bak
 koememo_*.log.bak
 config.json
+
+# 除外しないPythonファイル
+!processed_files_viewer.py
 
 **/.claude/settings.local.json
