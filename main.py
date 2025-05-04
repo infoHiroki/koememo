@@ -489,9 +489,127 @@ def format_time(seconds: float) -> str:
     return f"{int(hours):02d}:{int(minutes):02d}:{seconds:06.3f}"
 
 
+def split_transcription(transcription: str, chunk_size: int = 5000) -> List[Dict[str, Any]]:
+    """文字起こしをチャンクに分割
+    
+    Args:
+        transcription: 文字起こしテキスト
+        chunk_size: 各チャンクの最大文字数（デフォルト: 5000文字）
+        
+    Returns:
+        分割されたチャンクのリスト。各チャンクは辞書形式で、
+        index, start_time, end_time, contentキーを持つ
+    """
+    lines = transcription.split("\n")
+    chunks = []
+    current_chunk = []
+    current_size = 0
+    chunk_index = 1
+    
+    # 時間情報を抽出するための正規表現
+    time_pattern = r"\[(\d{2}:\d{2}:\d{2}\.\d{3})"
+    
+    start_time = None
+    end_time = None
+    
+    for line in lines:
+        line_size = len(line) + 1  # 改行文字を考慮
+        
+        # 最初の行から開始時間を抽出
+        if not start_time and line:
+            start_match = re.search(time_pattern, line)
+            if start_match:
+                start_time = start_match.group(1)
+        
+        # チャンクサイズを超える場合、新しいチャンクを開始
+        if current_size + line_size > chunk_size and current_chunk:
+            # 最後の行から終了時間を抽出
+            if current_chunk[-1]:
+                end_match = re.search(time_pattern, current_chunk[-1])
+                if end_match:
+                    end_time = end_match.group(1)
+            
+            # チャンク情報を追加
+            chunks.append({
+                "index": chunk_index,
+                "start_time": start_time or "00:00:00.000",
+                "end_time": end_time or "unknown",
+                "content": "\n".join(current_chunk)
+            })
+            
+            # 新しいチャンクの準備
+            current_chunk = []
+            current_size = 0
+            chunk_index += 1
+            # 次のチャンクの開始時間は、現在の終了時間から始まる
+            start_time = end_time
+            end_time = None
+        
+        current_chunk.append(line)
+        current_size += line_size
+    
+    # 最後のチャンクを処理
+    if current_chunk:
+        if current_chunk[-1]:
+            end_match = re.search(time_pattern, current_chunk[-1])
+            if end_match:
+                end_time = end_match.group(1)
+        
+        chunks.append({
+            "index": chunk_index,
+            "start_time": start_time or "00:00:00.000",
+            "end_time": end_time or "unknown",
+            "content": "\n".join(current_chunk)
+        })
+    
+    # チャンク情報をログに出力
+    for chunk in chunks:
+        logger.info(f"チャンク {chunk['index']}: {chunk['start_time']} -> {chunk['end_time']}, サイズ: {len(chunk['content'])}文字")
+    
+    return chunks
+
+
+def is_long_transcription(transcription: str, config: Dict[str, Any]) -> bool:
+    """文字起こしが長いかどうかを判定する
+    
+    Args:
+        transcription: 判定する文字起こしテキスト
+        config: アプリケーション設定
+        
+    Returns:
+        True: 長い文字起こしと判定された場合
+        False: 通常の長さと判定された場合
+    """
+    # 文字数で判定（デフォルトは8000文字以上を長いと判断）
+    char_count = len(transcription)
+    processing_config = config.get("processing", {})
+    
+    # chunking が有効かどうか確認
+    chunking_enabled = processing_config.get("enable_chunking", True)
+    if not chunking_enabled:
+        logger.info("分割処理が無効に設定されています。標準処理を使用します。")
+        return False
+    
+    # チャンクサイズの2倍以上のテキストがある場合に分割処理を適用
+    chunk_size = processing_config.get("chunk_size", 5000)
+    threshold = chunk_size * 2
+    is_long = char_count > threshold
+    
+    if is_long:
+        logger.info(f"長い文字起こしを検出: 約{char_count}文字（閾値: {threshold}文字）")
+    
+    return is_long
+
+
 def call_llm_api(transcription: str, config: Dict[str, Any]) -> Optional[str]:
     """LLM APIを呼び出して議事録を生成"""
     try:
+        # 長い文字起こしかどうかをチェック
+        if is_long_transcription(transcription, config):
+            logger.info("長い文字起こしを検出したため、分割処理を適用します")
+            return process_chunked_transcription(transcription, config)
+            
+        # 通常の処理（短い文字起こし）
         llm_config = config["llm"]
         api_type = llm_config["api_type"]
         
@@ -527,6 +645,105 @@ def call_llm_api(transcription: str, config: Dict[str, Any]) -> Optional[str]:
     except Exception as e:
         logger.error(f"LLM API呼び出しエラー: {e}")
         return None
+
+
+def call_llm_api_for_chunk(chunk: Dict[str, Any], config: Dict[str, Any]) -> Optional[str]:
+    """チャンク用のLLM API呼び出し
+    
+    Args:
+        chunk: 処理するチャンク情報（index, start_time, end_time, content）
+        config: アプリケーション設定
+        
+    Returns:
+        要約結果テキスト、または失敗時はNone
+    """
+    try:
+        llm_config = config["llm"]
+        api_type = llm_config["api_type"]
+        
+        # テンプレート取得
+        template_name = llm_config.get("selected_template", "default")
+        if not template_name or template_name not in config["prompt_templates"]:
+            template_name = "default"
+            logger.warning(f"指定されたテンプレート '{template_name}' が見つかりません。デフォルトを使用します。")
+        
+        template = config["prompt_templates"][template_name]
+        
+        # チャンク情報を組み込んだプロンプトを作成
+        part_info = f"会議記録 第{chunk['index']}部（{chunk['start_time']}～{chunk['end_time']}）"
+        
+        # テンプレートにチャンク情報を追加
+        modified_template = f"{template}\n\n注: これは{part_info}の要約です。"
+        prompt = modified_template.replace("{transcription}", chunk["content"])
+        
+        logger.info(f"LLM API ({api_type}) 呼び出し開始 - チャンク {chunk['index']}")
+        
+        # 通常のLLM API呼び出し処理を実行
+        result = None
+        if api_type == "openai":
+            result = call_openai_api(prompt, llm_config)
+        elif api_type == "anthropic":
+            result = call_anthropic_api(prompt, llm_config)
+        elif api_type == "google":
+            result = call_google_api(prompt, llm_config)
+        else:
+            logger.error(f"サポートされていないAPI種類: {api_type}")
+            return None
+        
+        if result:
+            logger.info(f"チャンク {chunk['index']} の要約完了: 約{len(result)}文字")
+            # 要約にパート情報を追加
+            result = f"## {part_info}\n\n{result}"
+        else:
+            logger.error(f"チャンク {chunk['index']} の要約に失敗しました")
+        
+        return result
+    
+    except Exception as e:
+        logger.error(f"チャンク {chunk['index']} のLLM API呼び出しエラー: {e}")
+        return None
+
+
+def process_chunked_transcription(transcription: str, config: Dict[str, Any]) -> Optional[str]:
+    """長い文字起こしの分割処理
+    
+    Args:
+        transcription: 文字起こしテキスト全体
+        config: アプリケーション設定
+        
+    Returns:
+        処理結果の要約テキスト、または失敗時はNone
+    """
+    # 設定から分割サイズを取得
+    processing_config = config.get("processing", {})
+    chunk_size = processing_config.get("chunk_size", 5000)
+    
+    # 文字起こしを分割
+    chunks = split_transcription(transcription, chunk_size)
+    logger.info(f"文字起こしを {len(chunks)} チャンクに分割しました")
+    
+    # 各チャンクを処理
+    chunk_summaries = []
+    for chunk in chunks:
+        summary = call_llm_api_for_chunk(chunk, config)
+        if summary:
+            chunk_summaries.append(summary)
+        else:
+            logger.warning(f"チャンク {chunk['index']} の要約に失敗しました")
+    
+    # すべてのチャンクが処理失敗した場合
+    if not chunk_summaries:
+        logger.error("すべてのチャンクの処理に失敗しました")
+        return None
+    
+    # 要約を結合
+    combined_summary = "\n\n".join(chunk_summaries)
+    
+    # 二段階要約が有効な場合（現在は実装していない）
+    if processing_config.get("two_stage_summary", False) and len(chunks) > 1:
+        logger.info("二段階要約はこのバージョンではサポートされていません")
+    
+    return combined_summary
 
 
 def call_openai_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
