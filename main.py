@@ -483,10 +483,10 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
 
 
 def format_time(seconds: float) -> str:
-    """秒数を[HH:MM:SS.mmm]形式に変換"""
+    """秒数を[HH:MM:SS]形式に変換（小数点以下を省略）"""
     hours, remainder = divmod(seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    return f"{int(hours):02d}:{int(minutes):02d}:{seconds:06.3f}"
+    return f"{int(hours):02d}:{int(minutes):02d}:{int(seconds):02d}"
 
 
 def split_transcription(transcription: str, chunk_size: int = 5000) -> List[Dict[str, Any]]:
