@@ -305,6 +305,20 @@ def mark_file_as_processed(file_path: str, output_file: str):
     # 設定を保存
     save_config(config)
     logger.info(f"ファイルを処理済みリストに追加しました: {file_path}")
+    
+    # GUI実行中の場合は処理済みファイルリストを更新
+    try:
+        # tkが初期化されていて、GUIのルートウィンドウが存在する場合のみ
+        if 'Tk' in sys.modules and hasattr(sys.modules['tkinter'], '_default_root') and sys.modules['tkinter']._default_root:
+            root = sys.modules['tkinter']._default_root
+            # GUIインスタンスがアクセス可能か確認
+            for widget in root.winfo_children():
+                if hasattr(widget, 'master') and hasattr(widget.master, 'update_processed_files'):
+                    # 遅延実行で処理済みファイルリストを更新
+                    root.after(1000, widget.master.update_processed_files)
+                    break
+    except Exception as e:
+        logger.debug(f"GUIの処理済みファイルリスト更新中にエラーが発生しました（無視可能）: {e}")
 
 
 def load_config() -> Dict[str, Any]:

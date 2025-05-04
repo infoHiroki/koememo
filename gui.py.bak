@@ -144,26 +144,33 @@ class KoeMemoGUI:
         notebook = ttk.Notebook(self.root)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
         
-        # タブ用のフレームを作成
+        # 基本設定タブ
         basic_frame = ttk.Frame(notebook, padding=10)
-        model_frame = ttk.Frame(notebook, padding=10)
-        llm_frame = ttk.Frame(notebook, padding=10)
-        template_frame = ttk.Frame(notebook, padding=10)
-        models_frame = ttk.Frame(notebook, padding=10)
-        processed_files_frame = ttk.Frame(notebook, padding=10)
-        log_frame = ttk.Frame(notebook, padding=10)
-        
-        # タブの順序を定義
         notebook.add(basic_frame, text="基本設定")
-        notebook.add(model_frame, text="モデル設定")
-        notebook.add(llm_frame, text="LLM設定")
-        notebook.add(template_frame, text="プロンプト")
-        notebook.add(models_frame, text="モデル管理")
-        notebook.add(processed_files_frame, text="処理済みファイル")
-        notebook.add(log_frame, text="ログビューワー")
         
-        # ノートブック変数を保存（後で参照できるように）
-        self.notebook = notebook
+        # モデル設定タブ
+        model_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(model_frame, text="モデル設定")
+        
+        # LLM設定タブ
+        llm_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(llm_frame, text="LLM設定")
+        
+        # プロンプトタブ
+        template_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(template_frame, text="プロンプト")
+        
+        # モデル管理タブ
+        models_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(models_frame, text="モデル管理")
+        
+        # 処理済みファイルタブ
+        processed_files_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(processed_files_frame, text="処理済みファイル")
+        
+        # ログビューワータブ
+        log_frame = ttk.Frame(notebook, padding=10)
+        notebook.add(log_frame, text="ログビューワー")
         
         # 基本設定タブの内容
         self.build_basic_settings(basic_frame)
@@ -989,144 +996,118 @@ class KoeMemoGUI:
 
     def build_processed_files_viewer(self, parent: ttk.Frame):
         """処理済みファイルタブの構築"""
-        try:
-            # 説明フレーム
-            info_frame = ttk.Frame(parent)
-            info_frame.pack(fill=tk.X, pady=5)
-            
-            ttk.Label(info_frame, text="処理済みファイルリスト", font=("", 12, "bold")).pack(pady=5)
-            ttk.Label(info_frame, text="このタブでは、これまでに処理したファイルとその出力結果を確認できます。").pack(pady=5)
-            
-            # 操作フレーム
-            control_frame = ttk.Frame(parent)
-            control_frame.pack(fill=tk.X, pady=5)
-            
-            # 更新ボタン
-            ttk.Button(control_frame, text="リスト更新", command=self.refresh_processed_files).pack(side=tk.LEFT, padx=5, pady=5)
-            
-            # 出力フォルダを開くボタン
-            def open_output_dir():
-                output_dir = self.config.get("file_watcher", {}).get("output_directory", "")
-                if output_dir and os.path.exists(output_dir):
-                    if sys.platform == "win32":
-                        os.startfile(output_dir)
-                    elif sys.platform == "darwin":  # macOS
-                        subprocess.run(["open", output_dir])
-                    else:  # Linux
-                        subprocess.run(["xdg-open", output_dir])
-                else:
-                    messagebox.showwarning("警告", "出力ディレクトリが設定されていないか存在しません。")
-            
-            ttk.Button(control_frame, text="出力フォルダを開く", command=open_output_dir).pack(side=tk.LEFT, padx=5, pady=5)
-            
-            # クリーンアップボタン
-            def cleanup_processed_files():
-                processed_files = self.config.get("processed_files", {})
-                if not processed_files:
-                    messagebox.showinfo("情報", "処理済みファイルリストは空です。")
-                    return
-                    
-                # 確認ダイアログ
-                if messagebox.askyesno("確認", "古い処理済みファイル情報をクリーンアップしますか？\n\n※実際のファイルは削除されません。"):
-                    # 日付でソート
-                    sorted_entries = sorted(
-                        processed_files.items(),
-                        key=lambda x: x[1].get("processed_at", ""),
-                        reverse=True
-                    )
-                    
-                    # 上限数を100に設定
-                    max_entries = 100
-                    
-                    if len(sorted_entries) <= max_entries:
-                        messagebox.showinfo("情報", f"現在の処理済みファイルは{len(sorted_entries)}件で上限（{max_entries}件）以下です。\nクリーンアップの必要はありません。")
-                        return
-                    
-                    # 上限までの項目を保持
-                    self.config["processed_files"] = dict(sorted_entries[:max_entries])
-                    
-                    # 設定を保存
-                    self.save_config()
-                    
-                    # リストを更新
-                    self.refresh_processed_files()
-                    
-                    messagebox.showinfo("情報", 
-                                      f"処理済みファイルリストをクリーンアップしました。\n"
-                                      f"（{len(sorted_entries)}件から{max_entries}件に削減）\n\n"
-                                      "※最近の処理ファイル情報のみが保持されます。")
-            
-            ttk.Button(control_frame, text="古い履歴を削除", command=cleanup_processed_files).pack(side=tk.LEFT, padx=5, pady=5)
-            
-            # 検索フレーム
-            search_frame = ttk.Frame(control_frame)
-            search_frame.pack(side=tk.RIGHT, padx=5, pady=5)
-            
-            ttk.Label(search_frame, text="検索:").pack(side=tk.LEFT, padx=5)
-            self.processed_search_var = tk.StringVar()
-            search_entry = ttk.Entry(search_frame, textvariable=self.processed_search_var, width=20)
-            search_entry.pack(side=tk.LEFT, padx=5)
-            search_entry.bind("<KeyRelease>", lambda e: self.filter_processed_files())
-            
-            # ツリービュー（表形式）でファイルリストを表示
-            tree_frame = ttk.Frame(parent)
-            tree_frame.pack(fill=tk.BOTH, expand=True, pady=5)
-            
-            columns = ("filename", "processed_at", "output_file")
-            self.processed_tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
-            
-            # カラム設定
-            self.processed_tree.heading("filename", text="元ファイル")
-            self.processed_tree.heading("processed_at", text="処理日時")
-            self.processed_tree.heading("output_file", text="出力ファイル")
-            
-            self.processed_tree.column("filename", width=200)
-            self.processed_tree.column("processed_at", width=150)
-            self.processed_tree.column("output_file", width=350)
-            
-            # ツリービューにスクロールバーを追加
-            tree_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.processed_tree.yview)
-            self.processed_tree.configure(yscrollcommand=tree_scrollbar.set)
-            
-            self.processed_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-            tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-            
-            # ダブルクリックで出力ファイルを開く
-            self.processed_tree.bind("<Double-1>", self.open_output_file)
-            
-            # 右クリックメニュー
-            self.context_menu = tk.Menu(self.processed_tree, tearoff=0)
-            self.context_menu.add_command(label="出力ファイルを開く", command=self.open_selected_output)
-            self.context_menu.add_command(label="出力フォルダを開く", command=self.open_output_folder)
-            self.processed_tree.bind("<Button-3>", self.show_context_menu)
-            
-            # 初期データ読み込み
-            self.refresh_processed_files()
-            
-            print("処理済みファイルタブが正常に構築されました。")
-            
-        except Exception as e:
-            print(f"処理済みファイルタブの構築中にエラーが発生しました: {e}")
-            import traceback
-            traceback.print_exc()
-            
-            # エラーメッセージを表示
-            error_label = ttk.Label(parent, text=f"処理済みファイルの表示中にエラーが発生しました: {e}", foreground="red")
-            error_label.pack(pady=20)
-            
-            # 再読み込みボタン
-            reload_button = ttk.Button(parent, text="タブを再読み込み", 
-                                      command=lambda: self.rebuild_processed_files_tab(parent))
-            reload_button.pack(pady=10)
-    
-    def rebuild_processed_files_tab(self, parent):
-        """処理済みファイルタブを再構築する"""
-        # 既存の子ウィジェットをクリア
-        for widget in parent.winfo_children():
-            widget.destroy()
+        # 説明フレーム
+        info_frame = ttk.Frame(parent)
+        info_frame.pack(fill=tk.X, pady=5)
         
-        # タブを再構築
-        self.build_processed_files_viewer(parent)
+        ttk.Label(info_frame, text="処理済みファイルリスト", font=("", 12, "bold")).pack(pady=5)
+        ttk.Label(info_frame, text="このタブでは、これまでに処理したファイルとその出力結果を確認できます。").pack(pady=5)
+        
+        # 操作フレーム
+        control_frame = ttk.Frame(parent)
+        control_frame.pack(fill=tk.X, pady=5)
+        
+        # 更新ボタン
+        ttk.Button(control_frame, text="リスト更新", command=self.refresh_processed_files).pack(side=tk.LEFT, padx=5, pady=5)
+        
+        # 出力フォルダを開くボタン
+        def open_output_dir():
+            output_dir = self.config.get("file_watcher", {}).get("output_directory", "")
+            if output_dir and os.path.exists(output_dir):
+                if sys.platform == "win32":
+                    os.startfile(output_dir)
+                elif sys.platform == "darwin":  # macOS
+                    subprocess.run(["open", output_dir])
+                else:  # Linux
+                    subprocess.run(["xdg-open", output_dir])
+            else:
+                messagebox.showwarning("警告", "出力ディレクトリが設定されていないか存在しません。")
+        
+        ttk.Button(control_frame, text="出力フォルダを開く", command=open_output_dir).pack(side=tk.LEFT, padx=5, pady=5)
+        
+        # クリーンアップボタン
+        def cleanup_processed_files():
+            processed_files = self.config.get("processed_files", {})
+            if not processed_files:
+                messagebox.showinfo("情報", "処理済みファイルリストは空です。")
+                return
+                
+            # 確認ダイアログ
+            if messagebox.askyesno("確認", "古い処理済みファイル情報をクリーンアップしますか？\n\n※実際のファイルは削除されません。"):
+                # 日付でソート
+                sorted_entries = sorted(
+                    processed_files.items(),
+                    key=lambda x: x[1].get("processed_at", ""),
+                    reverse=True
+                )
+                
+                # 上限数を100に設定
+                max_entries = 100
+                
+                if len(sorted_entries) <= max_entries:
+                    messagebox.showinfo("情報", f"現在の処理済みファイルは{len(sorted_entries)}件で上限（{max_entries}件）以下です。\nクリーンアップの必要はありません。")
+                    return
+                
+                # 上限までの項目を保持
+                self.config["processed_files"] = dict(sorted_entries[:max_entries])
+                
+                # 設定を保存
+                self.save_config()
+                
+                # リストを更新
+                self.refresh_processed_files()
+                
+                messagebox.showinfo("情報", 
+                                   f"処理済みファイルリストをクリーンアップしました。\n"
+                                   f"（{len(sorted_entries)}件から{max_entries}件に削減）\n\n"
+                                   "※最近の処理ファイル情報のみが保持されます。")
+        
+        ttk.Button(control_frame, text="古い履歴を削除", command=cleanup_processed_files).pack(side=tk.LEFT, padx=5, pady=5)
+        
+        # 検索フレーム
+        search_frame = ttk.Frame(control_frame)
+        search_frame.pack(side=tk.RIGHT, padx=5, pady=5)
+        
+        ttk.Label(search_frame, text="検索:").pack(side=tk.LEFT, padx=5)
+        self.processed_search_var = tk.StringVar()
+        search_entry = ttk.Entry(search_frame, textvariable=self.processed_search_var, width=20)
+        search_entry.pack(side=tk.LEFT, padx=5)
+        search_entry.bind("<KeyRelease>", lambda e: self.filter_processed_files())
+        
+        # ツリービュー（表形式）でファイルリストを表示
+        tree_frame = ttk.Frame(parent)
+        tree_frame.pack(fill=tk.BOTH, expand=True, pady=5)
+        
+        columns = ("filename", "processed_at", "output_file")
+        self.processed_tree = ttk.Treeview(tree_frame, columns=columns, show="headings")
+        
+        # カラム設定
+        self.processed_tree.heading("filename", text="元ファイル")
+        self.processed_tree.heading("processed_at", text="処理日時")
+        self.processed_tree.heading("output_file", text="出力ファイル")
+        
+        self.processed_tree.column("filename", width=200)
+        self.processed_tree.column("processed_at", width=150)
+        self.processed_tree.column("output_file", width=350)
+        
+        # ツリービューにスクロールバーを追加
+        tree_scrollbar = ttk.Scrollbar(tree_frame, orient="vertical", command=self.processed_tree.yview)
+        self.processed_tree.configure(yscrollcommand=tree_scrollbar.set)
+        
+        self.processed_tree.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        tree_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        # ダブルクリックで出力ファイルを開く
+        self.processed_tree.bind("<Double-1>", self.open_output_file)
+        
+        # 右クリックメニュー
+        self.context_menu = tk.Menu(self.processed_tree, tearoff=0)
+        self.context_menu.add_command(label="出力ファイルを開く", command=self.open_selected_output)
+        self.context_menu.add_command(label="出力フォルダを開く", command=self.open_output_folder)
+        self.processed_tree.bind("<Button-3>", self.show_context_menu)
+        
+        # 初期データ読み込み
+        self.refresh_processed_files()
         
     def refresh_processed_files(self):
         """処理済みファイルリストを更新"""
