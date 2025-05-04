@@ -133,9 +133,9 @@ class KoeMemoGUI:
         try:
             with open(CONFIG_PATH, "w", encoding="utf-8") as f:
                 json.dump(self.config, f, ensure_ascii=False, indent=4)
-            logger.info("設定を保存しました。")
+            logger.info("✅ 設定を保存しました。")
         except Exception as e:
-            logger.error(f"設定ファイルの保存エラー: {e}")
+            logger.error(f"❌ 設定ファイルの保存エラー: {e}")
             messagebox.showerror("エラー", f"設定ファイルの保存に失敗しました: {e}")
 
     def build_ui(self):
@@ -721,7 +721,7 @@ class KoeMemoGUI:
         
         self.save_config()
         
-        messagebox.showinfo("情報", f"プロンプト「{template_name}」を保存しました。")
+        messagebox.showinfo("情報", f"✅ プロンプト「{template_name}」を保存しました。")
 
     def create_template(self):
         """新しいプロンプトを作成"""
@@ -924,7 +924,7 @@ class KoeMemoGUI:
             self.status_var.set("サービスは実行中です")
             self.start_stop_button.config(text="サービス停止")
             
-            messagebox.showinfo("情報", "KoeMemoサービスを開始しました。")
+            messagebox.showinfo("情報", "🚀 KoeMemoサービスを開始しました。")
         
         except Exception as e:
             logger.error(f"サービス開始エラー: {e}")
@@ -960,7 +960,7 @@ class KoeMemoGUI:
             self.status_var.set("サービスは停止しています")
             self.start_stop_button.config(text="サービス開始")
             
-            messagebox.showinfo("情報", "KoeMemoサービスを停止しました。")
+            messagebox.showinfo("情報", "🛑 KoeMemoサービスを停止しました。")
         
         except Exception as e:
             logger.error(f"サービス停止エラー: {e}")

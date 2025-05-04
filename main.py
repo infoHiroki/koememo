@@ -464,7 +464,7 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
             if text:
                 result.append(f"[{start_time} -> {end_time}] {text}")
         
-        logger.info(f"文字起こし完了: {os.path.basename(file_path)}")
+        logger.info(f"✅ 文字起こし完了: {os.path.basename(file_path)}")
         
         return "\n".join(result)
     
@@ -636,14 +636,14 @@ def call_llm_api(transcription: str, config: Dict[str, Any]) -> Optional[str]:
             return None
             
         if result:
-            logger.info(f"LLM API ({api_type}) 呼び出し完了: 約{len(result)}文字の応答を受信")
+            logger.info(f"✅ LLM API ({api_type}) 呼び出し完了: 約{len(result)}文字の応答を受信")
         else:
-            logger.error(f"LLM API ({api_type}) 呼び出し失敗: 応答なし")
+            logger.error(f"❌ LLM API ({api_type}) 呼び出し失敗: 応答なし")
             
         return result
     
     except Exception as e:
-        logger.error(f"LLM API呼び出しエラー: {e}")
+        logger.error(f"❌ LLM API呼び出しエラー: {e}")
         return None
 
 
@@ -691,16 +691,16 @@ def call_llm_api_for_chunk(chunk: Dict[str, Any], config: Dict[str, Any]) -> Opt
             return None
         
         if result:
-            logger.info(f"チャンク {chunk['index']} の要約完了: 約{len(result)}文字")
+            logger.info(f"✅ チャンク {chunk['index']} の要約完了: 約{len(result)}文字")
             # 要約にパート情報を追加
             result = f"## {part_info}\n\n{result}"
         else:
-            logger.error(f"チャンク {chunk['index']} の要約に失敗しました")
+            logger.error(f"❌ チャンク {chunk['index']} の要約に失敗しました")
         
         return result
     
     except Exception as e:
-        logger.error(f"チャンク {chunk['index']} のLLM API呼び出しエラー: {e}")
+        logger.error(f"❌ チャンク {chunk['index']} のLLM API呼び出しエラー: {e}")
         return None
 
 
@@ -729,11 +729,11 @@ def process_chunked_transcription(transcription: str, config: Dict[str, Any]) ->
         if summary:
             chunk_summaries.append(summary)
         else:
-            logger.warning(f"チャンク {chunk['index']} の要約に失敗しました")
+            logger.warning(f"⚠️ チャンク {chunk['index']} の要約に失敗しました")
     
     # すべてのチャンクが処理失敗した場合
     if not chunk_summaries:
-        logger.error("すべてのチャンクの処理に失敗しました")
+        logger.error("❌ すべてのチャンクの処理に失敗しました")
         return None
     
     # 要約を結合
@@ -750,7 +750,7 @@ def call_openai_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
     """OpenAI APIを呼び出す"""
     api_key = config["api_key"]
     if not api_key:
-        logger.error("OpenAI APIキーが設定されていません。")
+        logger.error("❌ OpenAI APIキーが設定されていません。")
         return None
     
     try:
@@ -779,11 +779,11 @@ def call_openai_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
             result = response.json()
             return result["choices"][0]["message"]["content"]
         else:
-            logger.error(f"API呼び出しエラー: {response.status_code} - {response.text}")
+            logger.error(f"❌ API呼び出しエラー: {response.status_code} - {response.text}")
             return None
     
     except Exception as e:
-        logger.error(f"OpenAI API呼び出し例外: {e}")
+        logger.error(f"❌ OpenAI API呼び出し例外: {e}")
         return None
 
 
@@ -791,7 +791,7 @@ def call_anthropic_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
     """Anthropic Claude APIを呼び出す"""
     api_key = config["api_key"]
     if not api_key:
-        logger.error("Anthropic APIキーが設定されていません。")
+        logger.error("❌ Anthropic APIキーが設定されていません。")
         return None
     
     try:
@@ -821,11 +821,11 @@ def call_anthropic_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
             result = response.json()
             return result["content"][0]["text"]
         else:
-            logger.error(f"API呼び出しエラー: {response.status_code} - {response.text}")
+            logger.error(f"❌ API呼び出しエラー: {response.status_code} - {response.text}")
             return None
     
     except Exception as e:
-        logger.error(f"Anthropic API呼び出し例外: {e}")
+        logger.error(f"❌ Anthropic API呼び出し例外: {e}")
         return None
 
 
@@ -833,7 +833,7 @@ def call_google_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
     """Google Gemini APIを呼び出す"""
     api_key = config.get("google_api_key", "")
     if not api_key:
-        logger.error("Google APIキーが設定されていません。")
+        logger.error("❌ Google APIキーが設定されていません。")
         return None
     
     try:
@@ -879,11 +879,11 @@ def call_google_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
             logger.error(f"Google API応答の解析に失敗しました: {result}")
             return None
         else:
-            logger.error(f"Google API呼び出しエラー: {response.status_code} - {response.text}")
+            logger.error(f"❌ Google API呼び出しエラー: {response.status_code} - {response.text}")
             return None
     
     except Exception as e:
-        logger.error(f"Google API呼び出し例外: {e}")
+        logger.error(f"❌ Google API呼び出し例外: {e}")
         return None
 
 
@@ -932,11 +932,11 @@ def process_file_queue():
             
             # ファイル処理
             base_filename = os.path.basename(file_path)
-            logger.info(f"===== 処理開始: {base_filename} =====")
-            logger.info(f"処理ステップ [1/4]: 文字起こし準備")
+            logger.info(f"🔄 ===== 処理開始: {base_filename} =====")
+            logger.info(f"📋 処理ステップ [1/4]: 文字起こし準備")
             
             # 1. 文字起こし
-            logger.info(f"処理ステップ [2/4]: 文字起こし実行中...")
+            logger.info(f"🔄 処理ステップ [2/4]: 文字起こし実行中...")
             transcription = transcribe_file(file_path, config)
             if not transcription or should_stop:
                 logger.warning(f"❌ 文字起こしに失敗または中断されました: {file_path}")
@@ -954,10 +954,10 @@ def process_file_queue():
             transcript_file = os.path.join(transcript_dir, f"{base_name}_transcript_{timestamp}.txt")
             with open(transcript_file, "w", encoding="utf-8") as f:
                 f.write(transcription)
-            logger.info(f"✓ 文字起こし結果を保存しました: {transcript_file}")
+            logger.info(f"✅ 文字起こし結果を保存しました: {transcript_file}")
             
             # 2. LLM API呼び出し
-            logger.info(f"処理ステップ [3/4]: LLM APIで議事録生成中...")
+            logger.info(f"🔄 処理ステップ [3/4]: LLM APIで議事録生成中...")
             memo = call_llm_api(transcription, config)
             
             if not memo or should_stop:
@@ -966,11 +966,11 @@ def process_file_queue():
                 continue
             
             # 3. 結果を保存
-            logger.info(f"処理ステップ [4/4]: 議事録保存中...")
+            logger.info(f"🔄 処理ステップ [4/4]: 議事録保存中...")
             output_file = save_output(memo, file_path, config)
             
-            logger.info(f"✓✓ 処理完了: {base_filename}")
-            logger.info(f"  出力ファイル: {output_file}")
+            logger.info(f"✅✅ 処理完了: {base_filename}")
+            logger.info(f"📄 出力ファイル: {output_file}")
             logger.info(f"===== 処理終了: {base_filename} =====")
             
             # 4. 処理済みとしてマーク
@@ -1136,7 +1136,7 @@ def start_service():
     # 既存ファイルのチェック
     check_existing_files(config)
     
-    logger.info("KoeMemoサービスが開始されました。")
+    logger.info("🚀 KoeMemoサービスが開始されました。")
     return True
 
 
@@ -1158,7 +1158,7 @@ def stop_service():
         processing_thread.join(timeout=5)
         processing_thread = None
     
-    logger.info("KoeMemoサービスが停止されました。")
+    logger.info("🛑 KoeMemoサービスが停止されました。")
 
 
 def main():
