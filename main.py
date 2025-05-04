@@ -521,7 +521,7 @@ def split_transcription(transcription: str, chunk_size: int = 5000) -> List[Dict
     chunk_index = 1
     
     # 時間情報を抽出するための正規表現
-    time_pattern = r"\[(\d{2}:\d{2}:\d{2}\.\d{3})"
+    time_pattern = r"\[(\d{2}:\d{2}:\d{2})"
     
     start_time = None
     end_time = None
@@ -578,7 +578,9 @@ def split_transcription(transcription: str, chunk_size: int = 5000) -> List[Dict
     
     # チャンク情報をログに出力
     for chunk in chunks:
-        logger.info(f"チャンク {chunk['index']}: {chunk['start_time']} -> {chunk['end_time']}, サイズ: {len(chunk['content'])}文字")
+        start_time = chunk['start_time'] if chunk['start_time'] != "unknown" else "00:00:00"
+        end_time = chunk['end_time'] if chunk['end_time'] != "unknown" else "最後まで"
+        logger.info(f"チャンク {chunk['index']}: {start_time} -> {end_time}, サイズ: {len(chunk['content'])}文字")
     
     return chunks
 
@@ -683,8 +685,10 @@ def call_llm_api_for_chunk(chunk: Dict[str, Any], config: Dict[str, Any]) -> Opt
         
         template = config["prompt_templates"][template_name]
         
-        # チャンク情報を組み込んだプロンプトを作成
-        part_info = f"会議記録 第{chunk['index']}部（{chunk['start_time']}～{chunk['end_time']}）"
+        # チャンク情報を組み込んだプロンプトを作成（タイムスタンプ部分の表示を保証するための処理）
+        start_time = chunk['start_time'] if chunk['start_time'] != "unknown" else "00:00:00"
+        end_time = chunk['end_time'] if chunk['end_time'] != "unknown" else "最後まで"
+        part_info = f"会議記録 第{chunk['index']}部（{start_time}～{end_time}）"
         
         # テンプレートにチャンク情報を追加
         modified_template = f"{template}\n\n注: これは{part_info}の要約です。"
@@ -753,11 +757,76 @@ def process_chunked_transcription(transcription: str, config: Dict[str, Any]) ->
     # 要約を結合
     combined_summary = "\n\n".join(chunk_summaries)
     
-    # 二段階要約が有効な場合（現在は実装していない）
+    # 二段階要約が有効な場合は全体要約を生成
     if processing_config.get("two_stage_summary", False) and len(chunks) > 1:
-        logger.info("二段階要約はこのバージョンではサポートされていません")
+        logger.info("全体要約を生成します...")
+        
+        # 各チャンクの要約をまとめた全体要約を生成
+        overall_summary = create_overall_summary(chunk_summaries, config)
+        if overall_summary:
+            combined_summary = f"# 会議全体の要約\n\n{overall_summary}\n\n# チャンク別詳細\n\n{combined_summary}"
+            logger.info("全体要約の生成が完了しました")
+        else:
+            logger.warning("全体要約の生成に失敗しました")
     
     return combined_summary
+
+def create_overall_summary(chunk_summaries: List[str], config: Dict[str, Any]) -> Optional[str]:
+    """各チャンクの要約から全体要約を生成する
+    
+    Args:
+        chunk_summaries: 各チャンクの要約テキストのリスト
+        config: アプリケーション設定
+        
+    Returns:
+        全体要約テキスト、または失敗時はNone
+    """
+    try:
+        llm_config = config["llm"]
+        api_type = llm_config["api_type"]
+        
+        # すべてのチャンク要約を組み合わせたテキスト
+        combined_text = "\n\n".join(chunk_summaries)
+        
+        # 全体要約用のプロンプト
+        prompt = f"""
+以下は会議の各パートの要約です。これらの要約を統合して、会議全体の簡潔な要約を生成してください。
+
+重要な点：
+- 全体の流れを把握できるようにする
+- 重要な意思決定や結論を強調する
+- 矛盾する情報があれば調整して一貫性のある要約にする
+- 重複内容は一度だけ記載する
+
+以下の会議パート要約から全体要約を作成してください：
+
+{combined_text}
+"""
+        
+        logger.info(f"全体要約のLLM API ({api_type}) 呼び出し開始")
+        
+        # LLM API呼び出し
+        result = None
+        if api_type == "openai":
+            result = call_openai_api(prompt, llm_config)
+        elif api_type == "anthropic":
+            result = call_anthropic_api(prompt, llm_config)
+        elif api_type == "google":
+            result = call_google_api(prompt, llm_config)
+        else:
+            logger.error(f"サポートされていないAPI種類: {api_type}")
+            return None
+        
+        if result:
+            logger.info(f"✅ 全体要約の生成完了: 約{len(result)}文字の応答を受信")
+            return result
+        else:
+            logger.error("❌ 全体要約の生成に失敗しました")
+            return None
+    
+    except Exception as e:
+        logger.error(f"❌ 全体要約の生成エラー: {e}")
+        return None
 
 
 def call_openai_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:

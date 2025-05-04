@@ -34,7 +34,7 @@
     "processing": {
         "chunk_size": 5000,
         "enable_chunking": true,
-        "two_stage_summary": false
+        "two_stage_summary": true
     },
     "llm_models": {
         "openai": [
