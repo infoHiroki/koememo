@@ -160,27 +160,22 @@ class KoeMemoGUI:
                 if "llm_models" not in config:
                     config["llm_models"] = {
                         "openai": [
-                            "gpt-3.5-turbo",
-                            "gpt-3.5-turbo-16k",
-                            "gpt-4",
-                            "gpt-4-turbo",
                             "gpt-4o",
                             "gpt-4o-mini",
-                            "gpt-4-32k"
+                            "gpt-4-turbo",
+                            "gpt-4",
+                            "gpt-3.5-turbo",
+                            "gpt-3.5-turbo-16k"
                         ],
                         "anthropic": [
                             "claude-3-opus-20240229",
                             "claude-3-sonnet-20240229",
-                            "claude-3-haiku-20240307",
-                            "claude-2.0",
-                            "claude-2.1",
-                            "claude-instant-1.2"
+                            "claude-3-haiku-20240307"
                         ],
                         "google": [
-                            "gemini-pro",
                             "gemini-1.5-pro",
                             "gemini-1.5-flash",
-                            "gemini-ultra"
+                            "gemini-pro"
                         ]
                     }
                     # 更新した設定を保存
@@ -587,7 +582,7 @@ def call_anthropic_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
         headers = {
             "Content-Type": "application/json",
             "x-api-key": api_key,
-            "anthropic-version": "2023-06-01"
+            "anthropic-version": "2023-06-01"  # APIバージョン
         }
         
         data = {
@@ -628,9 +623,8 @@ def call_google_api(prompt: str, config: Dict[str, Any]) -> Optional[str]:
         # Gemini API URL
         model = config["model"]
         # モデル名に基づいてAPIパスを構築
-        # API仕様に合わせてモデル名を変換
-        model_id = model.replace("gemini-", "")
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_id}:generateContent?key={api_key}"
+        # API仕様に合わせてモデル名をそのまま使用
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
         
         headers = {
             "Content-Type": "application/json"

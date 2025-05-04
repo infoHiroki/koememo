@@ -100,27 +100,22 @@ class KoeMemoGUI:
                 if "llm_models" not in config:
                     config["llm_models"] = {
                         "openai": [
-                            "gpt-3.5-turbo",
-                            "gpt-3.5-turbo-16k",
-                            "gpt-4",
-                            "gpt-4-turbo",
                             "gpt-4o",
                             "gpt-4o-mini",
-                            "gpt-4-32k"
+                            "gpt-4-turbo",
+                            "gpt-4",
+                            "gpt-3.5-turbo",
+                            "gpt-3.5-turbo-16k"
                         ],
                         "anthropic": [
                             "claude-3-opus-20240229",
                             "claude-3-sonnet-20240229",
-                            "claude-3-haiku-20240307",
-                            "claude-2.0",
-                            "claude-2.1",
-                            "claude-instant-1.2"
+                            "claude-3-haiku-20240307"
                         ],
                         "google": [
-                            "gemini-pro",
                             "gemini-1.5-pro",
                             "gemini-1.5-flash",
-                            "gemini-ultra"
+                            "gemini-pro"
                         ]
                     }
                     # 更新した設定を保存
@@ -417,8 +412,9 @@ class KoeMemoGUI:
         
         note_text = (
             "• APIキーは各サービスから取得してください。\n"
-            "• OpenAI APIを使用する場合は、対応するAPIキーが必要です。\n"
-            "• Google Gemini APIを使用する場合は、Google APIキーが必要です。\n"
+            "• OpenAI APIを使用する場合: https://platform.openai.com/ から取得したAPIキーを「APIキー」欄に入力\n"
+            "• Anthropic Claude APIを使用する場合: https://console.anthropic.com/ から取得したAPIキーを「APIキー」欄に入力\n"
+            "• Google Gemini APIを使用する場合: https://aistudio.google.com/ または Google Cloud Consoleから取得したAPIキーを「Google APIキー」欄に入力\n"
             "• APIの使用には料金が発生する場合があります。各サービスの料金体系を確認してください。\n"
             "• Temperatureが低いほど決定的な出力になり、高いほど多様な出力になります。\n"
             "• 最大トークン数は生成される議事録の長さに影響します。"
