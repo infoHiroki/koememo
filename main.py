@@ -447,25 +447,25 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
             task="transcribe"
         )
         
-        # 結果を文字列にまとめる
+        # 結果を文字列にまとめる - ジェネレータをそのまま処理
         result = []
         segment_count = 0
-        # segments はジェネレータなので、リストに変換して全体のセグメント数を取得
-        segments_list = list(segments)
-        total_segments = len(segments_list)
-        logger.info(f"合計セグメント数: {total_segments}")
+        last_progress_time = time.time()
+        estimated_segments = 0  # 推定セグメント数（音声の長さから概算）
         
-        for segment in segments_list:
+        # segmentsはジェネレータなのでリストに変換せずに処理
+        for segment in segments:
             segment_count += 1
             
-            # 10セグメントごとに進捗をログに表示（または最初と最後のセグメント）
-            if segment_count % 10 == 0 or segment_count == total_segments or segment_count == 1:
-                progress = (segment_count / total_segments) * 100
+            # 10セグメントごと、または5秒ごとに進捗をログに表示
+            current_time = time.time()
+            if segment_count % 10 == 0 or segment_count == 1 or (current_time - last_progress_time) >= 5:
+                last_progress_time = current_time
                 text_preview = segment.text.strip()
                 # テキストをログに表示（長い場合は省略）
                 if len(text_preview) > 30:
                     text_preview = text_preview[:27] + "..."
-                logger.info(f"文字起こし進捗: {segment_count}/{total_segments} セグメント処理 ({progress:.1f}%) - \"{text_preview}\"")
+                logger.info(f"文字起こし進捗: セグメント {segment_count} - \"{text_preview}\"")
                 
             if should_stop:
                 logger.info("文字起こし処理が中断されました。")
@@ -478,7 +478,7 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
             if text:
                 result.append(f"[{start_time} -> {end_time}] {text}")
         
-        logger.info(f"✅ 文字起こし完了: {os.path.basename(file_path)}")
+        logger.info(f"✅ 文字起こし完了: {os.path.basename(file_path)} - 合計 {segment_count} セグメント処理")
         
         return "\n".join(result)
     
