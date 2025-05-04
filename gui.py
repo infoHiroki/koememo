@@ -156,9 +156,9 @@ class KoeMemoGUI:
         llm_frame = ttk.Frame(notebook, padding=10)
         notebook.add(llm_frame, text="LLM設定")
         
-        # テンプレートタブ
+        # プロンプトタブ
         template_frame = ttk.Frame(notebook, padding=10)
-        notebook.add(template_frame, text="テンプレート")
+        notebook.add(template_frame, text="プロンプト")
         
         # モデル管理タブ
         models_frame = ttk.Frame(notebook, padding=10)
@@ -618,16 +618,16 @@ class KoeMemoGUI:
         messagebox.showinfo("情報", f"プロバイダー「{provider}」を削除しました。")
 
     def build_template_settings(self, parent: ttk.Frame):
-        """テンプレート設定タブの構築"""
-        # テンプレート選択
+        """プロンプト設定タブの構築"""
+        # プロンプト選択
         template_selector_frame = ttk.Frame(parent)
         template_selector_frame.pack(fill=tk.X, pady=5)
         
-        ttk.Label(template_selector_frame, text="テンプレート:").pack(side=tk.LEFT, padx=5, pady=5)
+        ttk.Label(template_selector_frame, text="プロンプト:").pack(side=tk.LEFT, padx=5, pady=5)
         
         templates = list(self.config.get("prompt_templates", {}).keys())
         
-        # 現在選択されているテンプレートを取得（設定されていなければ最初のテンプレート）
+        # 現在選択されているプロンプトを取得（設定されていなければ最初のプロンプト）
         selected_template = self.config.get("llm", {}).get("selected_template", "")
         if not selected_template or selected_template not in templates:
             selected_template = templates[0] if templates else ""
@@ -637,7 +637,7 @@ class KoeMemoGUI:
         self.template_combo.pack(side=tk.LEFT, padx=5, pady=5)
         self.template_combo.bind("<<ComboboxSelected>>", self.load_template)
         
-        # 新規テンプレート名
+        # 新規プロンプト名
         self.new_template_var = tk.StringVar()
         new_template_entry = ttk.Entry(template_selector_frame, textvariable=self.new_template_var, width=20)
         new_template_entry.pack(side=tk.LEFT, padx=5, pady=5)
@@ -645,11 +645,11 @@ class KoeMemoGUI:
         ttk.Button(template_selector_frame, text="新規作成", command=self.create_template).pack(side=tk.LEFT, padx=5, pady=5)
         ttk.Button(template_selector_frame, text="削除", command=self.delete_template).pack(side=tk.LEFT, padx=5, pady=5)
         
-        # テンプレート編集
-        template_edit_frame = ttk.LabelFrame(parent, text="テンプレート編集", padding=10)
+        # プロンプト編集
+        template_edit_frame = ttk.LabelFrame(parent, text="プロンプト編集", padding=10)
         template_edit_frame.pack(fill=tk.BOTH, expand=True, pady=5)
         
-        # テンプレートテキスト
+        # プロンプトテキスト
         self.template_text = tk.Text(template_edit_frame, wrap=tk.WORD, height=15)
         self.template_text.pack(fill=tk.BOTH, expand=True, side=tk.LEFT)
         
@@ -658,7 +658,7 @@ class KoeMemoGUI:
         self.template_text.config(yscrollcommand=template_scrollbar.set)
         
         # 保存ボタン
-        ttk.Button(parent, text="テンプレート保存", command=self.save_template).pack(anchor=tk.E, padx=5, pady=5)
+        ttk.Button(parent, text="プロンプト保存", command=self.save_template).pack(anchor=tk.E, padx=5, pady=5)
         
         # プレースホルダーの説明
         placeholder_frame = ttk.LabelFrame(parent, text="使用可能なプレースホルダー", padding=10)
@@ -672,12 +672,12 @@ class KoeMemoGUI:
         )
         ttk.Label(placeholder_frame, text=placeholder_text, wraplength=700, justify="left").pack(fill=tk.X)
         
-        # 初期テンプレートの読み込み
+        # 初期プロンプトの読み込み
         if templates:
             self.load_template()
 
     def load_template(self, event=None):
-        """選択されたテンプレートを読み込む"""
+        """選択されたプロンプトを読み込む"""
         template_name = self.template_var.get()
         if not template_name:
             return
@@ -687,7 +687,7 @@ class KoeMemoGUI:
         self.template_text.delete(1.0, tk.END)
         self.template_text.insert(tk.END, template_content)
         
-        # 選択されたテンプレートを設定に反映
+        # 選択されたプロンプトを設定に反映
         if "llm" not in self.config:
             self.config["llm"] = {}
         self.config["llm"]["selected_template"] = template_name
@@ -697,16 +697,16 @@ class KoeMemoGUI:
             self.save_config()
 
     def save_template(self):
-        """現在のテンプレートを保存"""
+        """現在のプロンプトを保存"""
         template_name = self.template_var.get()
         if not template_name:
-            messagebox.showwarning("警告", "テンプレートが選択されていません。")
+            messagebox.showwarning("警告", "プロンプトが選択されていません。")
             return
         
         template_content = self.template_text.get(1.0, tk.END).strip()
         
         if not template_content:
-            messagebox.showwarning("警告", "テンプレート内容が空です。")
+            messagebox.showwarning("警告", "プロンプト内容が空です。")
             return
         
         if "prompt_templates" not in self.config:
@@ -714,94 +714,94 @@ class KoeMemoGUI:
         
         self.config["prompt_templates"][template_name] = template_content
         
-        # 選択されたテンプレートを設定に反映
+        # 選択されたプロンプトを設定に反映
         if "llm" not in self.config:
             self.config["llm"] = {}
         self.config["llm"]["selected_template"] = template_name
         
         self.save_config()
         
-        messagebox.showinfo("情報", f"テンプレート「{template_name}」を保存しました。")
+        messagebox.showinfo("情報", f"プロンプト「{template_name}」を保存しました。")
 
     def create_template(self):
-        """新しいテンプレートを作成"""
+        """新しいプロンプトを作成"""
         new_name = self.new_template_var.get().strip()
         
         if not new_name:
-            messagebox.showwarning("警告", "テンプレート名を入力してください。")
+            messagebox.showwarning("警告", "プロンプト名を入力してください。")
             return
         
         if "prompt_templates" not in self.config:
             self.config["prompt_templates"] = {}
         
         if new_name in self.config["prompt_templates"]:
-            messagebox.showwarning("警告", f"テンプレート「{new_name}」は既に存在します。")
+            messagebox.showwarning("警告", f"プロンプト「{new_name}」は既に存在します。")
             return
         
-        # デフォルトのテンプレート内容を設定
+        # デフォルトのプロンプト内容を設定
         self.config["prompt_templates"][new_name] = "以下は会議の文字起こしです。これを元に、議事録を作成してください。\n\n文字起こし内容：\n{transcription}"
         
-        # テンプレートリストを更新
+        # プロンプトリストを更新
         templates = list(self.config["prompt_templates"].keys())
         self.template_combo["values"] = templates
         self.template_var.set(new_name)
         
-        # 選択されたテンプレートを設定に反映
+        # 選択されたプロンプトを設定に反映
         if "llm" not in self.config:
             self.config["llm"] = {}
         self.config["llm"]["selected_template"] = new_name
         
-        # テンプレートを読み込む
+        # プロンプトを読み込む
         self.load_template()
         
         # 設定を保存
         self.save_config()
         
-        messagebox.showinfo("情報", f"新しいテンプレート「{new_name}」を作成しました。")
+        messagebox.showinfo("情報", f"新しいプロンプト「{new_name}」を作成しました。")
         self.new_template_var.set("")
 
     def delete_template(self):
-        """テンプレートを削除"""
+        """プロンプトを削除"""
         template_name = self.template_var.get()
         
         if not template_name:
-            messagebox.showwarning("警告", "テンプレートが選択されていません。")
+            messagebox.showwarning("警告", "プロンプトが選択されていません。")
             return
         
         if "prompt_templates" not in self.config or template_name not in self.config["prompt_templates"]:
-            messagebox.showwarning("警告", f"テンプレート「{template_name}」が見つかりません。")
+            messagebox.showwarning("警告", f"プロンプト「{template_name}」が見つかりません。")
             return
         
         # 確認ダイアログ
-        if not messagebox.askyesno("確認", f"テンプレート「{template_name}」を削除してもよろしいですか？"):
+        if not messagebox.askyesno("確認", f"プロンプト「{template_name}」を削除してもよろしいですか？"):
             return
         
-        # 少なくとも1つのテンプレートを残す
+        # 少なくとも1つのプロンプトを残す
         if len(self.config["prompt_templates"]) <= 1:
-            messagebox.showwarning("警告", "少なくとも1つのテンプレートが必要です。削除できません。")
+            messagebox.showwarning("警告", "少なくとも1つのプロンプトが必要です。削除できません。")
             return
         
-        # テンプレートを削除
+        # プロンプトを削除
         del self.config["prompt_templates"][template_name]
         
-        # テンプレートリストを更新
+        # プロンプトリストを更新
         templates = list(self.config["prompt_templates"].keys())
         self.template_combo["values"] = templates
         new_selected_template = templates[0] if templates else ""
         self.template_var.set(new_selected_template)
         
-        # 選択されたテンプレートを設定に反映
+        # 選択されたプロンプトを設定に反映
         if "llm" in self.config and "selected_template" in self.config["llm"]:
             if self.config["llm"]["selected_template"] == template_name:
                 self.config["llm"]["selected_template"] = new_selected_template
         
-        # テンプレートを読み込む
+        # プロンプトを読み込む
         self.load_template()
         
         # 設定を保存
         self.save_config()
         
-        messagebox.showinfo("情報", f"テンプレート「{template_name}」を削除しました。")
+        messagebox.showinfo("情報", f"プロンプト「{template_name}」を削除しました。")
 
     def browse_input_dir(self):
         """入力ディレクトリを選択"""
