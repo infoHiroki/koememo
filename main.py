@@ -437,7 +437,12 @@ def transcribe_file(file_path: str, config: Dict[str, Any]) -> Optional[str]:
             logger.info(f"言語設定: {language}")
         
         base_filename = os.path.basename(file_path)
-        logger.info(f"文字起こし開始: {base_filename}")
+        # モデル情報を取得
+        model_size = config["transcription"]["model_size"]
+        compute_type = config["transcription"]["compute_type"]
+        device = "cuda" if is_cuda_available() else "cpu"
+        
+        logger.info(f"文字起こし開始: {base_filename} (モデル: {model_size}, デバイス: {device}, 計算タイプ: {compute_type})")
         
         # 文字起こしの実行
         segments, info = whisper_model.transcribe(
