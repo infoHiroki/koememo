@@ -9,7 +9,7 @@
         "api_key": "",
         "model": "gpt-4o-mini",
         "temperature": 0.3,
-        "max_tokens": 3000,
+        "max_tokens": 6000,
         "google_api_key": "",
         "selected_template": "default"
     },
@@ -33,7 +33,7 @@
         "テスト１": "以下は会議の文字起こしです。これを元に、議事録を作成してください。\n\n文字起こし内容：\n{transcription}"
     },
     "processing": {
-        "chunk_size": 5000,
+        "chunk_size": 12000,
         "enable_chunking": true,
         "two_stage_summary": true
     },

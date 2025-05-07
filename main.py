@@ -601,7 +601,7 @@ def is_long_transcription(transcription: str, config: Dict[str, Any]) -> bool:
         True: 長い文字起こしと判定された場合
         False: 通常の長さと判定された場合
     """
-    # 文字数で判定（デフォルトは8000文字以上を長いと判断）
+    # 文字数で判定
     char_count = len(transcription)
     processing_config = config.get("processing", {})
     
@@ -611,13 +611,42 @@ def is_long_transcription(transcription: str, config: Dict[str, Any]) -> bool:
         logger.info("分割処理が無効に設定されています。標準処理を使用します。")
         return False
     
-    # チャンクサイズの2倍以上のテキストがある場合に分割処理を適用
-    chunk_size = processing_config.get("chunk_size", 5000)
-    threshold = chunk_size * 2
+    # 選択されたLLMモデルの情報を取得
+    llm_config = config.get("llm", {})
+    model_name = llm_config.get("model", "").lower()
+    api_type = llm_config.get("api_type", "openai").lower()
+    
+    # モデルに基づいて閾値を調整
+    chunk_size = processing_config.get("chunk_size", 12000)
+    threshold_multiplier = 3  # デフォルトの閾値乗数
+    
+    # モデル特性に基づく調整
+    if api_type == "openai":
+        if "gpt-4o" in model_name or "gpt-4-turbo" in model_name:
+            # GPT-4oやGPT-4-turboはより大きなコンテキストを処理可能
+            threshold_multiplier = 3
+        elif "gpt-3.5" in model_name:
+            # GPT-3.5は小さめのコンテキスト
+            threshold_multiplier = 2.5
+    elif api_type == "anthropic":
+        if "opus" in model_name:
+            threshold_multiplier = 3.5
+        elif "sonnet" in model_name:
+            threshold_multiplier = 3
+        else:  # haiku等
+            threshold_multiplier = 2.5
+    elif api_type == "google":
+        if "1.5-pro" in model_name:
+            threshold_multiplier = 3.5
+        else:
+            threshold_multiplier = 3
+    
+    # チャンクサイズと乗数に基づいて閾値を計算
+    threshold = int(chunk_size * threshold_multiplier)
     is_long = char_count > threshold
     
     if is_long:
-        logger.info(f"長い文字起こしを検出: 約{char_count}文字（閾値: {threshold}文字）")
+        logger.info(f"長い文字起こしを検出: 約{char_count}文字（閾値: {threshold}文字、モデル: {model_name}）")
     
     return is_long
 
