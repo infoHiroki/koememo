@@ -127,7 +127,6 @@ processed_*.txt
 processed_*.log
 *.log.bak
 koememo_*.log.bak
-config.json
 
 # 除外しないPythonファイル
 !processed_files_viewer.py
