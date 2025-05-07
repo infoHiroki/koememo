@@ -6,17 +6,17 @@
     },
     "llm": {
         "api_type": "openai",
-        "api_key": "YOUR_API_KEY_HERE",
+        "api_key": "",
         "model": "gpt-4o-mini",
         "temperature": 0.3,
-        "max_tokens": 1500,
+        "max_tokens": 3000,
         "google_api_key": "",
         "selected_template": "default"
     },
     "file_watcher": {
-        "input_directory": "/path/to/your/input/directory",
-        "output_directory": "/path/to/your/output/directory",
-        "transcript_directory": "/path/to/your/transcript/directory",
+        "input_directory": "",
+        "output_directory": "",
+        "transcript_directory": "",
         "supported_extensions": [
             ".mp3",
             ".mp4",
